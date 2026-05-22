@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MokoGithub\KerberosAuth\Notifications;
 
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -18,7 +18,7 @@ class UnknownKerberosAttemptNotification extends Notification implements ShouldQ
         public string $kerberos,
         public string $ipAddress,
         public string $userAgent,
-        public Carbon $attemptedAt
+        public CarbonInterface $attemptedAt
     ) {
         $this->onQueue('notifications');
     }
