@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Enums\UserStatus;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use MokoGithub\KerberosAuth\Models\Role;
 
 class KerberosSetupSeeder extends Seeder
 {
@@ -27,7 +26,6 @@ class KerberosSetupSeeder extends Seeder
                 'name' => 'Test User',
                 'kerberos' => 'admin@krb.example.com',
                 'password' => Hash::make('password'),
-                'status' => UserStatus::ACTIVE,
             ]
         );
 

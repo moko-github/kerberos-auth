@@ -10,7 +10,8 @@
     },
     "autoload": {
         "psr-4": {
-            "MokoGithub\\KerberosAuth\\": "src/"
+            "MokoGithub\\KerberosAuth\\": "src/",
+            "Database\\Seeders\\": "database/seeders/"
         }
     },
     "extra": {
