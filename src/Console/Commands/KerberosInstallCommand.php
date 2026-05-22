@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\File;
 use MokoGithub\KerberosAuth\Database\Seeders\KerberosSetupSeeder;
 use MokoGithub\KerberosAuth\Database\Seeders\RolesSeeder;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
@@ -14,8 +15,8 @@ use function Laravel\Prompts\outro;
 class KerberosInstallCommand extends Command
 {
     protected $signature = 'kerberos:install
-                            {--no-seed : Skip all seeders}
-                            {--no-roles : Skip RolesSeeder only}';
+                            {--no-seed : Skip all seeders without prompt}
+                            {--no-roles : Skip RolesSeeder without prompt}';
 
     protected $description = "Installe l'authentification Kerberos SSO dans l'application Laravel";
 
@@ -77,7 +78,7 @@ class KerberosInstallCommand extends Command
 
     protected function configureRoutes(): void
     {
-        $routesFile    = base_path('routes/web.php');
+        $routesFile     = base_path('routes/web.php');
         $kerberosRoutes = "\n\n// Routes d'authentification Kerberos\nRoute::middleware('guest')->group(function (): void {\n    Route::get('/demande-acces', \\MokoGithub\\KerberosAuth\\Livewire\\Auth\\RequestAccess::class)->name('access-request.create');\n    Route::get('/acces-refuse', \\MokoGithub\\KerberosAuth\\Livewire\\Auth\\AccessDenied::class)->name('access-denied');\n});\n";
 
         File::append($routesFile, $kerberosRoutes);
@@ -115,12 +116,19 @@ class KerberosInstallCommand extends Command
     {
         $this->call('migrate', ['--force' => true]);
 
-        $skipAll   = $this->option('no-seed')   || ! config('kerberos.install.run_seeders', true);
-        $skipRoles = $this->option('no-roles')  || ! config('kerberos.install.seed_roles', true);
-
-        if ($skipAll) {
+        // --no-seed flag ou config désactivent les seeders sans poser de question
+        if ($this->option('no-seed') || ! config('kerberos.install.run_seeders', true)) {
             return;
         }
+
+        if (! confirm('Exécuter les seeders Kerberos ?', default: true)) {
+            return;
+        }
+
+        // --no-roles flag ou config court-circuitent la question sur les rôles
+        $skipRoles = $this->option('no-roles')
+            || ! config('kerberos.install.seed_roles', true)
+            || ! confirm('Inclure le RolesSeeder (crée les rôles Admin et User) ?', default: true);
 
         if (! $skipRoles) {
             $this->call('db:seed', ['--class' => RolesSeeder::class, '--force' => true]);
