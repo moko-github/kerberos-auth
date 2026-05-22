@@ -10,44 +10,47 @@ Package Laravel d'authentification SSO Kerberos via la variable serveur `REMOTE_
 - Composants Livewire 4 inclus (access-denied, request-access, simulate-kerberos, simulation-banner)
 - Migrations, seeders et commandes artisan inclus
 
-## Installation via git subtree
+## Installation
 
-> **Attention requise** : Remplacez `YOUR_REPO_URL` dans les commandes par l'URL du dépôt avec l'ip par exemple.
-> - `http://257.257.257.257/equipe/kerberos-auth.git`
+### 1. Déclarer le dépôt privé dans `composer.json`
+
+Comme ce package est hébergé sur un dépôt Git privé, ajoutez-le dans la section `repositories` de l'application consommatrice :
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/moko-github/kerberos-auth"
+        }
+    ]
+}
+```
+
+### 2. Installer le package
 
 ```bash
-# 1. Ajouter le remote
-git remote add kerberos-auth YOUR_REPO_URL
-git fetch kerberos-auth
-
-# 2. Intégrer les fichiers comme subtree
-git subtree add --prefix=packages/kerberos-auth kerberos-auth main --squash
+composer require moko-github/kerberos-auth
 ```
 
-```jsonc
-// 3. composer.json — ajouter dans "autoload.psr-4"
-"MokoGithub\\KerberosAuth\\": "packages/kerberos-auth/src/"
-```
+### 3. Lancer l'installateur
 
 ```bash
-composer dump-autoload
-```
-
-```php
-// 4. bootstrap/providers.php
-MokoGithub\KerberosAuth\KerberosServiceProvider::class,
-```
-
-```bash
-# 5. Lancer l'installateur
 php artisan kerberos:install
 ```
+
+Cette commande :
+- Configure les middlewares dans `bootstrap/app.php`
+- Met à jour le modèle `User` avec les champs et la relation Kerberos
+- Ajoute les routes nécessaires dans `routes/web.php`
+- Configure le scheduler dans `routes/console.php`
+- Ajoute les variables d'environnement dans `.env`
+- Exécute les migrations et les seeders
 
 ## Mise à jour
 
 ```bash
-git subtree pull --prefix=packages/kerberos-auth kerberos-auth main --squash
-composer dump-autoload
+composer update moko-github/kerberos-auth
 php artisan migrate
 ```
 
@@ -74,3 +77,13 @@ php artisan kerberos:purge-attempts   # Purge les tentatives anciennes
 ## Scheduler
 
 `kerberos:purge-attempts` est automatiquement planifié à 03h00 après `kerberos:install`.
+
+## Publication des ressources (optionnel)
+
+```bash
+# Publier la configuration
+php artisan vendor:publish --tag=kerberos-config
+
+# Publier les seeders
+php artisan vendor:publish --tag=kerberos-seeders
+```
