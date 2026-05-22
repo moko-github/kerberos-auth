@@ -6,10 +6,6 @@ return [
     |--------------------------------------------------------------------------
     | Kerberos Authentication Enabled
     |--------------------------------------------------------------------------
-    |
-    | When enabled, the system will attempt to authenticate users via the
-    | REMOTE_USER server variable before falling back to standard login.
-    |
     */
 
     'enabled' => env('KERBEROS_ENABLED', false),
@@ -18,10 +14,6 @@ return [
     |--------------------------------------------------------------------------
     | Server Variable Name
     |--------------------------------------------------------------------------
-    |
-    | The server variable containing the Kerberos principal.
-    | Default is REMOTE_USER for Apache/Nginx Kerberos modules.
-    |
     */
 
     'server_variable' => env('KERBEROS_SERVER_VAR', 'REMOTE_USER'),
@@ -30,10 +22,6 @@ return [
     |--------------------------------------------------------------------------
     | Fallback Authentication
     |--------------------------------------------------------------------------
-    |
-    | When enabled, users can still authenticate via standard login/password
-    | if Kerberos authentication fails or is unavailable.
-    |
     */
 
     'fallback_auth' => env('KERBEROS_FALLBACK_AUTH', true),
@@ -42,9 +30,6 @@ return [
     |--------------------------------------------------------------------------
     | Simulation Mode (Development Only)
     |--------------------------------------------------------------------------
-    |
-    | Enables Kerberos simulation mode for local/staging environments.
-    | This allows developers to test Kerberos flows without a real KDC.
     |
     | WARNING: Automatically disabled if APP_ENV=production.
     |
@@ -57,10 +42,8 @@ return [
     | Admin Notification Emails
     |--------------------------------------------------------------------------
     |
-    | Comma-separated email addresses to notify for Kerberos-related events
-    | (unknown user attempts, new access requests, etc.).
-    |
-    | If empty, the system will notify all users with the Admin role.
+    | Comma-separated email addresses. If empty, all Admin-role users
+    | are notified.
     |
     */
 
@@ -73,9 +56,8 @@ return [
     | Admin Notification Mode
     |--------------------------------------------------------------------------
     |
-    | Controls how admins are notified about Kerberos events:
-    | - 'immediate': Send email immediately for each event
-    | - 'disabled': No notifications
+    | 'immediate' : send email for each event
+    | 'disabled'  : no notifications
     |
     */
 
@@ -85,10 +67,6 @@ return [
     |--------------------------------------------------------------------------
     | Automatic Cleanup Days
     |--------------------------------------------------------------------------
-    |
-    | Number of days to retain Kerberos login attempts in the database.
-    | Older attempts are automatically purged by the scheduled command.
-    |
     */
 
     'auto_cleanup_attempts_days' => env('KERBEROS_AUTO_CLEANUP_DAYS', 30),
@@ -98,7 +76,7 @@ return [
     | Allowed Domains (Optional)
     |--------------------------------------------------------------------------
     |
-    | Whitelist of allowed Kerberos domains. If empty, all domains are accepted.
+    | Whitelist of Kerberos domains. Empty = all domains accepted.
     | Example: ['example.fr', 'corp.example.fr']
     |
     */
@@ -106,5 +84,59 @@ return [
     'allowed_domains' => array_filter(
         explode(',', env('KERBEROS_ALLOWED_DOMAINS', ''))
     ),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Additional Excluded Routes
+    |--------------------------------------------------------------------------
+    |
+    | Route names to exclude from Kerberos authentication, in addition to
+    | the package defaults (access-denied, access-request.create, logout,
+    | livewire.*).
+    |
+    | Supports wildcards: 'admin.*', 'api.*'
+    |
+    */
+
+    'excluded_routes' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Role Check Strategy
+    |--------------------------------------------------------------------------
+    |
+    | Defines how the package determines whether a user has a role assigned.
+    |
+    | strategy 'column'   : checks that $user->{column} is not null.
+    |                       Suitable for single-role systems (default).
+    |
+    | strategy 'relation' : checks that $user->{relation}()->exists().
+    |                       Suitable for multi-role systems (Spatie Permission,
+    |                       custom pivot tables, etc.).
+    |
+    */
+
+    'role_check' => [
+        'strategy' => 'column',
+        'column'   => 'role_id',
+        'relation' => 'roles',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Install Seeders
+    |--------------------------------------------------------------------------
+    |
+    | Controls which seeders are executed during `kerberos:install`.
+    | These can also be overridden via command options:
+    |   --no-seed   : skip all seeders
+    |   --no-roles  : skip RolesSeeder only
+    |
+    */
+
+    'install' => [
+        'run_seeders'  => true,
+        'seed_roles'   => true,
+    ],
 
 ];

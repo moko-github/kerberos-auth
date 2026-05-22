@@ -15,13 +15,16 @@ class KerberosAuthentication
 
     public function handle(Request $request, Closure $next): Response
     {
-        $excludedRoutes = [
-            'access-denied',
-            'access-request.create',
-            'access-request.store',
-            'logout',
-            'livewire.*',
-        ];
+        $excludedRoutes = array_merge(
+            [
+                'access-denied',
+                'access-request.create',
+                'access-request.store',
+                'logout',
+                'livewire.*',
+            ],
+            config('kerberos.excluded_routes', [])
+        );
 
         if ($request->routeIs($excludedRoutes)) {
             return $next($request);
@@ -40,10 +43,10 @@ class KerberosAuthentication
         $result = $this->kerberosService->authenticate();
 
         return match ($result->status) {
-            AuthResult::SUCCESS => $this->handleSuccess($result, $request, $next),
-            AuthResult::NO_ROLE => $this->handleNoRole($result),
+            AuthResult::SUCCESS      => $this->handleSuccess($result, $request, $next),
+            AuthResult::NO_ROLE      => $this->handleNoRole($result),
             AuthResult::UNKNOWN_USER => $this->handleUnknownUser($result),
-            default => $next($request),
+            default                  => $next($request),
         };
     }
 
@@ -62,7 +65,7 @@ class KerberosAuthentication
 
         session([
             'pending_kerberos' => $result->kerberos,
-            'pending_user_id' => $result->user->id,
+            'pending_user_id'  => $result->user->id,
         ]);
 
         return redirect()->route('access-request.create');

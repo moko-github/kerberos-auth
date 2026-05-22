@@ -13,7 +13,9 @@ use function Laravel\Prompts\outro;
 
 class KerberosInstallCommand extends Command
 {
-    protected $signature = 'kerberos:install';
+    protected $signature = 'kerberos:install
+                            {--no-seed : Skip all seeders}
+                            {--no-roles : Skip RolesSeeder only}';
 
     protected $description = "Installe l'authentification Kerberos SSO dans l'application Laravel";
 
@@ -48,7 +50,7 @@ class KerberosInstallCommand extends Command
         $appFile = base_path('bootstrap/app.php');
         $content = File::get($appFile);
 
-        $search = "->withMiddleware(function (Middleware \$middleware): void {\n        //\n    })";
+        $search  = "->withMiddleware(function (Middleware \$middleware): void {\n        //\n    })";
         $replace = "->withMiddleware(function (Middleware \$middleware): void {\n        \$middleware->appendToGroup('web', \\MokoGithub\\KerberosAuth\\Http\\Middleware\\KerberosAuthentication::class);\n        \$middleware->alias(['kerberos.simulation' => \\MokoGithub\\KerberosAuth\\Http\\Middleware\\EnsureKerberosSimulationAllowed::class]);\n    })";
 
         File::put($appFile, str_replace($search, $replace, $content));
@@ -57,7 +59,7 @@ class KerberosInstallCommand extends Command
     protected function configureUserModel(): void
     {
         $userFile = base_path('app/Models/User.php');
-        $content = File::get($userFile);
+        $content  = File::get($userFile);
 
         $content = str_replace(
             "'password',\n    ];",
@@ -68,15 +70,14 @@ class KerberosInstallCommand extends Command
         $roleMethod = "\n    public function role(): \\Illuminate\\Database\\Eloquent\\Relations\\BelongsTo\n    {\n        return \$this->belongsTo(\\MokoGithub\\KerberosAuth\\Models\\Role::class);\n    }\n";
 
         $lastBrace = strrpos($content, '}');
-        $content = substr($content, 0, $lastBrace).$roleMethod.'}'.substr($content, $lastBrace + 1);
+        $content   = substr($content, 0, $lastBrace).$roleMethod.'}'.substr($content, $lastBrace + 1);
 
         File::put($userFile, $content);
     }
 
     protected function configureRoutes(): void
     {
-        $routesFile = base_path('routes/web.php');
-
+        $routesFile    = base_path('routes/web.php');
         $kerberosRoutes = "\n\n// Routes d'authentification Kerberos\nRoute::middleware('guest')->group(function (): void {\n    Route::get('/demande-acces', \\MokoGithub\\KerberosAuth\\Livewire\\Auth\\RequestAccess::class)->name('access-request.create');\n    Route::get('/acces-refuse', \\MokoGithub\\KerberosAuth\\Livewire\\Auth\\AccessDenied::class)->name('access-denied');\n});\n";
 
         File::append($routesFile, $kerberosRoutes);
@@ -84,7 +85,7 @@ class KerberosInstallCommand extends Command
 
     protected function configureScheduler(): void
     {
-        $consoleFile = base_path('routes/console.php');
+        $consoleFile    = base_path('routes/console.php');
         $schedulerEntry = "\n\\Illuminate\\Support\\Facades\\Schedule::command('kerberos:purge-attempts')->dailyAt('03:00');\n";
         File::append($consoleFile, $schedulerEntry);
     }
@@ -113,7 +114,18 @@ class KerberosInstallCommand extends Command
     protected function runKerberosMigrations(): void
     {
         $this->call('migrate', ['--force' => true]);
-        $this->call('db:seed', ['--class' => RolesSeeder::class, '--force' => true]);
+
+        $skipAll   = $this->option('no-seed')   || ! config('kerberos.install.run_seeders', true);
+        $skipRoles = $this->option('no-roles')  || ! config('kerberos.install.seed_roles', true);
+
+        if ($skipAll) {
+            return;
+        }
+
+        if (! $skipRoles) {
+            $this->call('db:seed', ['--class' => RolesSeeder::class, '--force' => true]);
+        }
+
         $this->call('db:seed', ['--class' => KerberosSetupSeeder::class, '--force' => true]);
     }
 }

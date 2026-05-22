@@ -37,6 +37,10 @@ class KerberosServiceProvider extends ServiceProvider
                 __DIR__.'/../database/seeders' => database_path('seeders'),
             ], 'kerberos-seeders');
 
+            $this->publishes([
+                __DIR__.'/../resources/views' => resource_path('views/vendor/kerberos-auth'),
+            ], 'kerberos-views');
+
             $this->commands([
                 KerberosInstallCommand::class,
                 PurgeKerberosAttempts::class,

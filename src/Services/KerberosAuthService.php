@@ -43,7 +43,7 @@ class KerberosAuthService
             return AuthResult::unknownUser($kerberos);
         }
 
-        if (is_null($user->role_id)) {
+        if (! $this->userHasRole($user)) {
             $this->logAttempt($kerberos, 'no_role', $user);
 
             return AuthResult::noRole($user, $kerberos);
@@ -54,13 +54,28 @@ class KerberosAuthService
         return AuthResult::success($user, $kerberos);
     }
 
+    protected function userHasRole(User $user): bool
+    {
+        $strategy = config('kerberos.role_check.strategy', 'column');
+
+        if ($strategy === 'relation') {
+            $relation = config('kerberos.role_check.relation', 'roles');
+
+            return $user->{$relation}()->exists();
+        }
+
+        $column = config('kerberos.role_check.column', 'role_id');
+
+        return ! is_null($user->{$column});
+    }
+
     public function createAccessRequest(User $user, string $kerberos, string $justification): AccessRequest
     {
         $accessRequest = AccessRequest::create([
-            'user_id' => $user->id,
-            'kerberos' => $kerberos,
+            'user_id'       => $user->id,
+            'kerberos'      => $kerberos,
             'justification' => $justification,
-            'status' => 'pending',
+            'status'        => 'pending',
         ]);
 
         $this->notifyAdminsNewRequest($accessRequest);
@@ -71,10 +86,10 @@ class KerberosAuthService
     public function logAttempt(string $kerberos, string $result, ?User $user = null): KerberosAttempt
     {
         return KerberosAttempt::create([
-            'kerberos' => $kerberos,
-            'result' => $result,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
+            'kerberos'     => $kerberos,
+            'result'       => $result,
+            'ip_address'   => request()->ip(),
+            'user_agent'   => request()->userAgent(),
             'attempted_at' => now(),
         ]);
     }
@@ -87,9 +102,9 @@ class KerberosAuthService
 
         foreach ($this->getAdminUsers() as $admin) {
             $admin->notify(new UnknownKerberosAttemptNotification(
-                kerberos: $kerberos,
-                ipAddress: request()->ip() ?? '',
-                userAgent: request()->userAgent() ?? '',
+                kerberos:    $kerberos,
+                ipAddress:   request()->ip() ?? '',
+                userAgent:   request()->userAgent() ?? '',
                 attemptedAt: now()
             ));
         }
