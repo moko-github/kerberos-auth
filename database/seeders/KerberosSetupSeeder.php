@@ -20,13 +20,19 @@ class KerberosSetupSeeder extends Seeder
             });
         }
 
+        $adminData = [
+            'name' => 'Test User',
+            'kerberos' => 'admin@krb.example.com',
+            'password' => Hash::make('password'),
+        ];
+
+        if (class_exists(\App\Enums\UserStatus::class)) {
+            $adminData['status'] = \App\Enums\UserStatus::ACTIVE;
+        }
+
         $admin = User::firstOrCreate(
             ['email' => 'admin@example.com'],
-            [
-                'name' => 'Test User',
-                'kerberos' => 'admin@krb.example.com',
-                'password' => Hash::make('password'),
-            ]
+            $adminData
         );
 
         $adminRole = Role::where('name', 'Admin')->first();
