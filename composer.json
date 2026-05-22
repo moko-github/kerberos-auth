@@ -11,7 +11,7 @@
     "autoload": {
         "psr-4": {
             "MokoGithub\\KerberosAuth\\": "src/",
-            "Database\\Seeders\\": "database/seeders/"
+            "MokoGithub\\KerberosAuth\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "extra": {

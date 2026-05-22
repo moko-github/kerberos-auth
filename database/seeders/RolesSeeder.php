@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace MokoGithub\KerberosAuth\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use MokoGithub\KerberosAuth\Models\Role;

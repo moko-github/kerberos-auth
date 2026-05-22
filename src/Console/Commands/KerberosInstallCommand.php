@@ -4,6 +4,8 @@ namespace MokoGithub\KerberosAuth\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use MokoGithub\KerberosAuth\Database\Seeders\KerberosSetupSeeder;
+use MokoGithub\KerberosAuth\Database\Seeders\RolesSeeder;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\note;
@@ -111,7 +113,7 @@ class KerberosInstallCommand extends Command
     protected function runKerberosMigrations(): void
     {
         $this->call('migrate', ['--force' => true]);
-        $this->call('db:seed', ['--class' => 'Database\\Seeders\\RolesSeeder', '--force' => true]);
-        $this->call('db:seed', ['--class' => 'Database\\Seeders\\KerberosSetupSeeder', '--force' => true]);
+        $this->call('db:seed', ['--class' => RolesSeeder::class, '--force' => true]);
+        $this->call('db:seed', ['--class' => KerberosSetupSeeder::class, '--force' => true]);
     }
 }
