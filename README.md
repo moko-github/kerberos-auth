@@ -76,6 +76,9 @@ Cette commande effectue automatiquement :
 - Ajout des variables d'environnement dans `.env`
 - Exécution des migrations et des seeders (selon les réponses)
 
+> Toutes les étapes sont **idempotentes** : relancer `kerberos:install` ne duplique rien.
+> Si une injection automatique échoue, un message `⚠` indique les lignes à ajouter manuellement.
+
 #### Options de la commande
 
 | Option | Effet |
@@ -154,20 +157,35 @@ Pour ajouter vos propres exclusions :
 
 ### Stratégie de vérification des rôles
 
-Définit comment le package détermine qu'un utilisateur a un rôle. Un utilisateur sans rôle est redirigé vers le formulaire de demande d'accès (`NO_ROLE`).
+Définit comment le package détermine qu'un utilisateur est autorisé à se connecter.
+Un utilisateur qui échoue ce contrôle reçoit le statut `NO_ROLE` et est redirigé vers le formulaire de demande d'accès.
 
 #### `strategy: 'column'` _(défaut)_
 
-Convient aux applications avec un **rôle unique** par utilisateur (colonne FK sur la table users).
+Vérifie une colonne du modèle User avec un opérateur.
 
 ```php
 'role_check' => [
     'strategy' => 'column',
-    'column'   => 'role_id',  // null = pas de rôle
+    'column'   => 'role_id',       // colonne à tester
+    'operator' => 'is_not_null',   // 'is_not_null' (défaut) | 'is_null'
 ],
 ```
 
-L'utilisateur est considéré **sans rôle** si `$user->role_id === null`.
+| `operator` | Condition d'accès | Cas d'usage typique |
+|---|---|---|
+| `is_not_null` | `$user->role_id !== null` | Système mono-rôle (FK) |
+| `is_null` | `$user->deleted_at === null` | Soft-delete comme garde d'accès |
+
+Exemples :
+
+```php
+// Accès si l'utilisateur a un rôle assigné (comportement par défaut)
+'role_check' => ['strategy' => 'column', 'column' => 'role_id', 'operator' => 'is_not_null'],
+
+// Accès si l'utilisateur n'est pas supprimé (deleted_at IS NULL)
+'role_check' => ['strategy' => 'column', 'column' => 'deleted_at', 'operator' => 'is_null'],
+```
 
 #### `strategy: 'relation'`
 
@@ -184,12 +202,43 @@ L'utilisateur est considéré **sans rôle** si `$user->roles()->exists()` retou
 
 Exemple avec Spatie Permission :
 ```php
-// config/kerberos.php
+'role_check' => ['strategy' => 'relation', 'relation' => 'roles'],
+```
+
+#### `strategy: 'callable'`
+
+Pour toute logique métier arbitraire ou composite, déléguez le contrôle à une classe dédiée.
+
+```php
 'role_check' => [
-    'strategy' => 'relation',
-    'relation' => 'roles',  // relation native de Spatie
+    'strategy' => 'callable',
+    'callable' => \App\Kerberos\MyAccessCheck::class,
 ],
 ```
+
+La classe doit implémenter `MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface` :
+
+```php
+<?php
+
+namespace App\Kerberos;
+
+use App\Models\User;
+use MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface;
+
+class MyAccessCheck implements UserAccessCheckInterface
+{
+    public function check(User $user): bool
+    {
+        // true  → accès autorisé
+        // false → redirigé vers le formulaire de demande d'accès
+        return $user->deleted_at === null
+            && $user->department !== 'EXTERN';
+    }
+}
+```
+
+> La classe est résolue via le conteneur Laravel : l'injection de dépendances fonctionne normalement.
 
 ### Seeders (via config)
 
@@ -216,27 +265,23 @@ Affiché quand un identifiant Kerberos est **inconnu** du système. Notifie l'ut
 
 **Route auto-enregistrée :** `GET /acces-refuse` → `access-denied`
 
-Le middleware redirige automatiquement vers cette route. Aucune insertion manuelle requise.
-
 ---
 
 ### `<livewire:auth.request-access />`
 
-Formulaire pour les utilisateurs **reconnus mais sans rôle**. Permet de soumettre une justification. Les administrateurs reçoivent une notification.
+Formulaire pour les utilisateurs **reconnus mais sans rôle** (ou dont le contrôle d'accès échoue). Permet de soumettre une justification. Les administrateurs reçoivent une notification.
 
 **Route auto-enregistrée :** `GET /demande-acces` → `access-request.create`
-
-Le middleware redirige automatiquement vers cette route. Aucune insertion manuelle requise.
 
 ---
 
 ### `<livewire:auth.simulate-kerberos />`
 
-Interface de simulation réservée aux environnements de développement. Permet de tester tous les flux Kerberos sans KDC réel.
+Interface de simulation réservée aux environnements de développement.
 
 **Prérequis :** `KERBEROS_SIMULATION_MODE=true` dans `.env`.
 
-**À placer sur la page de connexion** (ex. `resources/views/livewire/auth/login.blade.php`) :
+**À placer sur la page de connexion** :
 
 ```blade
 <livewire:auth.simulate-kerberos />
@@ -248,39 +293,23 @@ Le composant se masque automatiquement si `KERBEROS_SIMULATION_MODE=false` ou `A
 
 ### `<livewire:auth.simulation-banner />`
 
-Bannière visible en haut de page quand une simulation est active. Affiche l'identifiant simulé et propose un bouton pour quitter.
+Bannière visible quand une simulation est active.
 
-**À placer dans le layout principal** (ex. `resources/views/components/layouts/app.blade.php`) :
+**À placer dans le layout principal** :
 
 ```blade
 <livewire:auth.simulation-banner />
 ```
 
-La bannière est invisible si aucune simulation n'est active.
-
 ---
 
 ## Personnalisation des vues
-
-Pour adapter les composants à votre stack CSS (Bootstrap, Bulma, etc.) :
 
 ```bash
 php artisan vendor:publish --tag=kerberos-views
 ```
 
-Cela copie les vues dans `resources/views/vendor/kerberos-auth/livewire/auth/` :
-
-```
-resources/views/vendor/kerberos-auth/
-└── livewire/
-    └── auth/
-        ├── access-denied.blade.php
-        ├── request-access.blade.php
-        ├── simulate-kerberos.blade.php
-        └── simulation-banner.blade.php
-```
-
-Livewire cherche automatiquement dans ce dossier avant d'utiliser les vues du package. Les modifications sont immédiatement prises en compte.
+Copie les vues dans `resources/views/vendor/kerberos-auth/livewire/auth/`. Livewire cherche automatiquement dans ce dossier avant les vues du package.
 
 ---
 

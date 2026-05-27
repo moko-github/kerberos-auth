@@ -105,21 +105,37 @@ return [
     | Role Check Strategy
     |--------------------------------------------------------------------------
     |
-    | Defines how the package determines whether a user has a role assigned.
+    | Defines how the package determines whether a user is allowed to log in.
+    | A user that fails this check receives NO_ROLE status and is redirected
+    | to the access-request form.
     |
-    | strategy 'column'   : checks that $user->{column} is not null.
-    |                       Suitable for single-role systems (default).
+    | strategy 'column'
+    |   Checks a single column on the User model using an operator.
+    |   operator 'is_not_null' (default) : user is allowed if $user->{column} is not null.
+    |   operator 'is_null'               : user is allowed if $user->{column} is null.
     |
-    | strategy 'relation' : checks that $user->{relation}()->exists().
-    |                       Suitable for multi-role systems (Spatie Permission,
-    |                       custom pivot tables, etc.).
+    |   Examples:
+    |     Single-role FK  : column = 'role_id',    operator = 'is_not_null'
+    |     Soft-delete gate: column = 'deleted_at',  operator = 'is_null'
+    |
+    | strategy 'relation'
+    |   Checks that $user->{relation}()->exists() returns true.
+    |   Suitable for multi-role systems (Spatie Permission, custom pivot, etc.).
+    |
+    | strategy 'callable'
+    |   Delegates the check to a class implementing
+    |   MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface.
+    |   The class is resolved via the service container (supports injection).
+    |   Use for any custom / composite business logic.
     |
     */
 
     'role_check' => [
         'strategy' => 'column',
         'column'   => 'role_id',
+        'operator' => 'is_not_null',
         'relation' => 'roles',
+        'callable' => null,
     ],
 
     /*
@@ -135,8 +151,8 @@ return [
     */
 
     'install' => [
-        'run_seeders'  => true,
-        'seed_roles'   => true,
+        'run_seeders' => true,
+        'seed_roles'  => true,
     ],
 
 ];

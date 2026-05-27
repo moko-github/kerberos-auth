@@ -3,6 +3,7 @@
 namespace MokoGithub\KerberosAuth\Services;
 
 use App\Models\User;
+use MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface;
 use MokoGithub\KerberosAuth\DTOs\AuthResult;
 use MokoGithub\KerberosAuth\Models\AccessRequest;
 use MokoGithub\KerberosAuth\Models\KerberosAttempt;
@@ -54,19 +55,59 @@ class KerberosAuthService
         return AuthResult::success($user, $kerberos);
     }
 
+    /**
+     * Determine whether the user has sufficient access to log in.
+     *
+     * Three strategies are available (config kerberos.role_check.strategy):
+     *
+     *   'column'   — checks a single column with an operator (is_not_null / is_null)
+     *   'relation' — checks that a relation is not empty
+     *   'callable' — delegates to a class implementing UserAccessCheckInterface
+     */
     protected function userHasRole(User $user): bool
     {
         $strategy = config('kerberos.role_check.strategy', 'column');
 
-        if ($strategy === 'relation') {
-            $relation = config('kerberos.role_check.relation', 'roles');
+        return match ($strategy) {
+            'relation' => $user->{config('kerberos.role_check.relation', 'roles')}()->exists(),
+            'callable' => $this->resolveCallable()->check($user),
+            default    => $this->checkColumn($user),
+        };
+    }
 
-            return $user->{$relation}()->exists();
+    protected function checkColumn(User $user): bool
+    {
+        $column   = config('kerberos.role_check.column', 'role_id');
+        $operator = config('kerberos.role_check.operator', 'is_not_null');
+
+        return $operator === 'is_null'
+            ? is_null($user->{$column})
+            : ! is_null($user->{$column});
+    }
+
+    protected function resolveCallable(): UserAccessCheckInterface
+    {
+        $class = config('kerberos.role_check.callable');
+
+        if (empty($class)) {
+            throw new \RuntimeException(
+                'kerberos.role_check.callable must be set when strategy is \'callable\'.'
+            );
         }
 
-        $column = config('kerberos.role_check.column', 'role_id');
+        if (! class_exists($class)) {
+            throw new \RuntimeException("Kerberos callable class [{$class}] not found.");
+        }
 
-        return ! is_null($user->{$column});
+        $instance = app($class);
+
+        if (! $instance instanceof UserAccessCheckInterface) {
+            throw new \RuntimeException(
+                "[{$class}] must implement ".UserAccessCheckInterface::class.'.'
+            );
+        }
+
+        return $instance;
     }
 
     public function createAccessRequest(User $user, string $kerberos, string $justification): AccessRequest
