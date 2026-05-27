@@ -65,6 +65,6 @@ class RequestAccess extends Component
     public function render(): mixed
     {
         return view('kerberos-auth::livewire.auth.request-access')
-            ->layout(config('kerberos.layout', 'kerberos-auth::layouts.guest'));
+            ->layout(config('kerberos.layout') ?? 'kerberos-auth::layouts.guest');
     }
 }

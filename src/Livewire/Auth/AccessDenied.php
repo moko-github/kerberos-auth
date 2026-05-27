@@ -27,6 +27,6 @@ class AccessDenied extends Component
     public function render(): mixed
     {
         return view('kerberos-auth::livewire.auth.access-denied')
-            ->layout(config('kerberos.layout', 'kerberos-auth::layouts.guest'));
+            ->layout(config('kerberos.layout') ?? 'kerberos-auth::layouts.guest');
     }
 }
