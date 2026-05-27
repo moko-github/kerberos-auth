@@ -3,11 +3,9 @@
 namespace MokoGithub\KerberosAuth\Livewire\Auth;
 
 use App\Models\User;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 use MokoGithub\KerberosAuth\Services\KerberosAuthService;
 
-#[Layout('layouts.auth')]
 class RequestAccess extends Component
 {
     public string $kerberos = '';
@@ -21,7 +19,7 @@ class RequestAccess extends Component
     public function mount(): void
     {
         $this->kerberos = session('pending_kerberos', '');
-        $this->user_id = session('pending_user_id');
+        $this->user_id  = session('pending_user_id');
 
         if (empty($this->kerberos)) {
             $this->redirect(route('login'), navigate: true);
@@ -39,8 +37,8 @@ class RequestAccess extends Component
     {
         return [
             'justification.required' => 'You must provide a justification for your access request.',
-            'justification.min' => 'The justification must be at least 20 characters.',
-            'justification.max' => 'The justification cannot exceed 500 characters.',
+            'justification.min'      => 'The justification must be at least 20 characters.',
+            'justification.max'      => 'The justification cannot exceed 500 characters.',
         ];
     }
 
@@ -66,6 +64,7 @@ class RequestAccess extends Component
 
     public function render(): mixed
     {
-        return view('kerberos-auth::livewire.auth.request-access');
+        return view('kerberos-auth::livewire.auth.request-access')
+            ->layout(config('kerberos.layout', 'kerberos-auth::layouts.guest'));
     }
 }

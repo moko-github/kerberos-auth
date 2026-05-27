@@ -102,6 +102,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Page Layout
+    |--------------------------------------------------------------------------
+    |
+    | Layout used by the package's Livewire page components (access-denied,
+    | request-access).
+    |
+    | null (default) : uses the package's own minimal guest layout
+    |                  (kerberos-auth::layouts.guest), which only requires
+    |                  Tailwind CSS. Publishable via --tag=kerberos-views.
+    |
+    | string         : use any layout from the application.
+    |                  Example: 'layouts.auth', 'components.layouts.app'
+    |
+    */
+
+    'layout' => null,
+
+    /*
+    |--------------------------------------------------------------------------
     | Role Check Strategy
     |--------------------------------------------------------------------------
     |

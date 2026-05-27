@@ -2,10 +2,8 @@
 
 namespace MokoGithub\KerberosAuth\Livewire\Auth;
 
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.auth')]
 class AccessDenied extends Component
 {
     public string $kerberos = '';
@@ -28,6 +26,7 @@ class AccessDenied extends Component
 
     public function render(): mixed
     {
-        return view('kerberos-auth::livewire.auth.access-denied');
+        return view('kerberos-auth::livewire.auth.access-denied')
+            ->layout(config('kerberos.layout', 'kerberos-auth::layouts.guest'));
     }
 }

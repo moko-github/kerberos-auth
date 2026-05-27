@@ -153,7 +153,25 @@ Pour ajouter vos propres exclusions :
 ],
 ```
 
-> Supports les wildcards (`*`) dans les noms de route.
+### Layout des pages Kerberos
+
+Les pages `/demande-acces` et `/acces-refuse` utilisent par défaut le layout minimal embarqué dans le package (`kerberos-auth::layouts.guest`) — une page blanche centrée qui ne nécessite que Tailwind CSS.
+
+**Pour utiliser le layout de votre application :**
+
+```php
+// config/kerberos.php
+'layout' => 'layouts.auth',           // layout Laravel standard
+'layout' => 'components.layouts.app', // layout Livewire Volt
+'layout' => 'layouts.guest',          // votre propre layout guest
+```
+
+**Pour personnaliser le layout du package :**
+
+```bash
+php artisan vendor:publish --tag=kerberos-views
+# → resources/views/vendor/kerberos-auth/layouts/guest.blade.php
+```
 
 ### Stratégie de vérification des rôles
 
@@ -177,37 +195,16 @@ Vérifie une colonne du modèle User avec un opérateur.
 | `is_not_null` | `$user->role_id !== null` | Système mono-rôle (FK) |
 | `is_null` | `$user->deleted_at === null` | Soft-delete comme garde d'accès |
 
-Exemples :
-
-```php
-// Accès si l'utilisateur a un rôle assigné (comportement par défaut)
-'role_check' => ['strategy' => 'column', 'column' => 'role_id', 'operator' => 'is_not_null'],
-
-// Accès si l'utilisateur n'est pas supprimé (deleted_at IS NULL)
-'role_check' => ['strategy' => 'column', 'column' => 'deleted_at', 'operator' => 'is_null'],
-```
-
 #### `strategy: 'relation'`
-
-Convient aux applications avec des **rôles multiples** (table pivot, Spatie Permission, etc.).
 
 ```php
 'role_check' => [
     'strategy' => 'relation',
-    'relation' => 'roles',  // nom de la relation sur le modèle User
+    'relation' => 'roles',
 ],
 ```
 
-L'utilisateur est considéré **sans rôle** si `$user->roles()->exists()` retourne `false`.
-
-Exemple avec Spatie Permission :
-```php
-'role_check' => ['strategy' => 'relation', 'relation' => 'roles'],
-```
-
 #### `strategy: 'callable'`
-
-Pour toute logique métier arbitraire ou composite, déléguez le contrôle à une classe dédiée.
 
 ```php
 'role_check' => [
@@ -219,83 +216,49 @@ Pour toute logique métier arbitraire ou composite, déléguez le contrôle à u
 La classe doit implémenter `MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface` :
 
 ```php
-<?php
-
-namespace App\Kerberos;
-
-use App\Models\User;
-use MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface;
-
 class MyAccessCheck implements UserAccessCheckInterface
 {
     public function check(User $user): bool
     {
-        // true  → accès autorisé
-        // false → redirigé vers le formulaire de demande d'accès
-        return $user->deleted_at === null
-            && $user->department !== 'EXTERN';
+        return $user->deleted_at === null && $user->department !== 'EXTERN';
     }
 }
 ```
 
-> La classe est résolue via le conteneur Laravel : l'injection de dépendances fonctionne normalement.
-
 ### Seeders (via config)
-
-Alternative aux flags artisan pour désactiver les seeders de façon permanente :
 
 ```php
 'install' => [
-    'run_seeders' => false,  // équivalent à --no-seed à chaque installation
-    'seed_roles'  => false,  // équivalent à --no-roles à chaque installation
+    'run_seeders' => false,
+    'seed_roles'  => false,
 ],
 ```
-
-> Les flags `--no-seed` et `--no-roles` ont toujours la priorité sur ces clés.
 
 ---
 
 ## Composants Livewire
 
-Les quatre composants sont enregistrés automatiquement. Aucune déclaration manuelle n'est nécessaire.
-
 ### `<livewire:auth.access-denied />`
 
-Affiché quand un identifiant Kerberos est **inconnu** du système. Notifie l'utilisateur et informe que les administrateurs ont été alertés.
-
-**Route auto-enregistrée :** `GET /acces-refuse` → `access-denied`
-
----
+Affiché quand un identifiant Kerberos est **inconnu** du système.
+**Route :** `GET /acces-refuse` → `access-denied`
 
 ### `<livewire:auth.request-access />`
 
-Formulaire pour les utilisateurs **reconnus mais sans rôle** (ou dont le contrôle d'accès échoue). Permet de soumettre une justification. Les administrateurs reçoivent une notification.
-
-**Route auto-enregistrée :** `GET /demande-acces` → `access-request.create`
-
----
+Formulaire pour les utilisateurs **reconnus mais sans rôle**.
+**Route :** `GET /demande-acces` → `access-request.create`
 
 ### `<livewire:auth.simulate-kerberos />`
 
-Interface de simulation réservée aux environnements de développement.
-
-**Prérequis :** `KERBEROS_SIMULATION_MODE=true` dans `.env`.
-
-**À placer sur la page de connexion** :
+Interface de simulation réservée au développement. **Prérequis :** `KERBEROS_SIMULATION_MODE=true`.
 
 ```blade
 <livewire:auth.simulate-kerberos />
 ```
 
-Le composant se masque automatiquement si `KERBEROS_SIMULATION_MODE=false` ou `APP_ENV=production`.
-
----
-
 ### `<livewire:auth.simulation-banner />`
 
-Bannière visible quand une simulation est active.
-
-**À placer dans le layout principal** :
+Bannière visible quand une simulation est active. **À placer dans le layout principal.**
 
 ```blade
 <livewire:auth.simulation-banner />
@@ -309,7 +272,16 @@ Bannière visible quand une simulation est active.
 php artisan vendor:publish --tag=kerberos-views
 ```
 
-Copie les vues dans `resources/views/vendor/kerberos-auth/livewire/auth/`. Livewire cherche automatiquement dans ce dossier avant les vues du package.
+Copie dans `resources/views/vendor/kerberos-auth/` :
+```
+├── layouts/
+│   └── guest.blade.php          # layout par défaut des pages Kerberos
+└── livewire/auth/
+    ├── access-denied.blade.php
+    ├── request-access.blade.php
+    ├── simulate-kerberos.blade.php
+    └── simulation-banner.blade.php
+```
 
 ---
 
@@ -331,14 +303,12 @@ php artisan kerberos:install --no-roles # Installation sans RolesSeeder
 php artisan kerberos:purge-attempts     # Purge les tentatives anciennes
 ```
 
-`kerberos:purge-attempts` est automatiquement planifié à 03h00 après `kerberos:install`.
-
 ---
 
 ## Publication des ressources
 
 ```bash
 php artisan vendor:publish --tag=kerberos-config   # config/kerberos.php
-php artisan vendor:publish --tag=kerberos-views    # vues Blade personnalisables
-php artisan vendor:publish --tag=kerberos-seeders  # seeders dans database/seeders/
+php artisan vendor:publish --tag=kerberos-views    # vues + layout guest
+php artisan vendor:publish --tag=kerberos-seeders  # seeders
 ```
