@@ -1,9 +1,9 @@
 <div>
     <div class="flex flex-col gap-6">
-        <x-auth-header
-            :title="__('Accès refusé')"
-            :description="__('Votre identifiant Kerberos n\'est pas reconnu')"
-        />
+        <div>
+            <h1 class="text-xl font-semibold text-base-content">{{ __('Accès refusé') }}</h1>
+            <p class="text-sm text-base-content/60 mt-1">{{ __("Votre identifiant Kerberos n'est pas reconnu") }}</p>
+        </div>
 
         <x-mary-card class="bg-error/10 border-error">
             <div class="flex flex-col gap-6">

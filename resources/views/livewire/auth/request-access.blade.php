@@ -1,10 +1,10 @@
 <div>
     @if ($submitted)
         <div class="flex flex-col gap-6">
-            <x-auth-header
-                :title="__('Demande d\'accès envoyée')"
-                :description="__('Votre demande a été transmise aux administrateurs')"
-            />
+            <div>
+                <h1 class="text-xl font-semibold text-base-content">{{ __("Demande d'accès envoyée") }}</h1>
+                <p class="text-sm text-base-content/60 mt-1">{{ __('Votre demande a été transmise aux administrateurs') }}</p>
+            </div>
 
             <x-mary-card class="bg-success/10 border-success">
                 <div class="flex flex-col gap-4 text-center">
@@ -34,10 +34,10 @@
         </div>
     @else
         <div class="flex flex-col gap-6">
-            <x-auth-header
-                :title="__('Demande d\'accès')"
-                :description="__('Votre compte n\'a pas encore de rôle attribué. Veuillez remplir ce formulaire.')"
-            />
+            <div>
+                <h1 class="text-xl font-semibold text-base-content">{{ __("Demande d'accès") }}</h1>
+                <p class="text-sm text-base-content/60 mt-1">{{ __("Votre compte n'a pas encore de rôle attribué. Veuillez remplir ce formulaire.") }}</p>
+            </div>
 
             <x-mary-card class="bg-warning/10 border-warning">
                 <div class="flex items-start gap-3">
