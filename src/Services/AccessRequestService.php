@@ -4,6 +4,7 @@ namespace MokoGithub\KerberosAuth\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use MokoGithub\KerberosAuth\Models\AccessRequest;
 use MokoGithub\KerberosAuth\Models\Role;
 use MokoGithub\KerberosAuth\Notifications\AccessRequestAcceptedNotification;
@@ -25,7 +26,7 @@ class AccessRequestService
                     'name' => $accessRequest->kerberos,
                     'email' => $accessRequest->kerberos,
                     'kerberos' => $accessRequest->kerberos,
-                    'password' => bcrypt(str()->random(32)),
+                    'password' => Hash::make(str()->random(32)),
                     'role_id' => $roleId,
                 ]);
 
