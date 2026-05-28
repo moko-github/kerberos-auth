@@ -15,11 +15,10 @@ class PurgeKerberosAttempts extends Command
     {
         $days = (int) $this->option('days');
 
-        $count = KerberosAttempt::purgeOld($days)->count();
+        $deleted = KerberosAttempt::purgeOld($days)->delete();
 
-        if ($count > 0) {
-            KerberosAttempt::purgeOld($days)->delete();
-            $this->info("Purged {$count} Kerberos attempt(s) older than {$days} days.");
+        if ($deleted > 0) {
+            $this->info("Purged {$deleted} Kerberos attempt(s) older than {$days} days.");
         } else {
             $this->info('No old Kerberos attempts to purge.');
         }
