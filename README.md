@@ -59,18 +59,21 @@ composer require moko-github/kerberos-auth:@dev
 php artisan kerberos:install
 ```
 
-Sans option, la commande pose des questions interactives pour les seeders.
+Sans option, la commande pose deux questions interactives.
 Sans réponse, les valeurs par défaut (entre crochets) s'appliquent.
 
 ```
 ◆ Installation de l'authentification Kerberos...
+  ● Installer le système de rôles ? (table roles + colonne role_id sur users) (yes/no) [yes]
+  ...migrations...
   ● Exécuter les seeders Kerberos ? (yes/no) [yes]
-  ● Inclure le RolesSeeder (crée les rôles Admin et User) ? (yes/no) [yes]
 ```
+
+La question sur les rôles est posée **avant** les migrations, ce qui garantit que la colonne `role_id` n'est ajoutée à la table `users` que si vous en avez besoin.
 
 Cette commande effectue automatiquement :
 - Ajout des middlewares dans `bootstrap/app.php`
-- Ajout des champs `kerberos` et `role_id` dans `app/Models/User.php`
+- Ajout du champ `kerberos` (et `role_id` si rôles activés) dans `app/Models/User.php`
 - Ajout des routes dans `routes/web.php`
 - Configuration du scheduler dans `routes/console.php`
 - Ajout des variables d'environnement dans `.env`
@@ -83,13 +86,13 @@ Cette commande effectue automatiquement :
 
 | Option | Effet |
 |---|---|
-| _(aucune)_ | Questions interactives pour les seeders |
-| `--no-seed` | Ignore **tous** les seeders sans poser de question |
-| `--no-roles` | Ignore uniquement le `RolesSeeder` sans poser de question |
+| _(aucune)_ | Questions interactives |
+| `--no-roles` | Ignore le système de rôles (migration `roles` + `role_id` + `RolesSeeder`) |
+| `--no-seed` | Ignore **tous** les seeders sans poser de question (les migrations s'exécutent quand même) |
 
 ```bash
-php artisan kerberos:install --no-seed    # migrations uniquement
-php artisan kerberos:install --no-roles   # migrations + KerberosSetupSeeder uniquement
+php artisan kerberos:install --no-roles   # sans système de rôles
+php artisan kerberos:install --no-seed    # migrations uniquement, sans seeders
 ```
 
 > Les flags ont la priorité sur les clés de config `install.run_seeders` et `install.seed_roles`.
@@ -102,7 +105,7 @@ php artisan kerberos:install --no-roles   # migrations + KerberosSetupSeeder uni
 
 Crée deux rôles en base : **Admin** et **User**.
 
-À utiliser si votre application s'appuie sur le système de rôles fourni par ce package (`MokoGithub\KerberosAuth\Models\Role`). À **ignorer** (`--no-roles`) si vous utilisez un autre système de rôles (Spatie Permission, rôles personnalisés, etc.).
+Exécuté uniquement si vous avez répondu **oui** à la question sur le système de rôles (ou si `--no-roles` n'est pas passé). À ignorer si vous utilisez un autre système de rôles (Spatie Permission, rôles personnalisés, etc.).
 
 ### KerberosSetupSeeder
 
