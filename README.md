@@ -12,6 +12,23 @@ Package Laravel d'authentification SSO Kerberos via la variable serveur `REMOTE_
 
 ---
 
+## Prérequis
+
+Sur votre modèle utilisateur et votre application :
+
+- **Trait `Illuminate\Notifications\Notifiable`** sur le modèle User — requis pour
+  l'envoi des notifications admin (nouvelle demande d'accès, tentative inconnue).
+- **Table `notifications`** migrée (`php artisan notifications:table && php artisan migrate`)
+  — la notification de nouvelle demande d'accès utilise le canal `database`.
+- **Colonne `remember_token`** sur la table `users` (présente par défaut dans Laravel)
+  si `kerberos.remember_login` est à `true` (défaut). Sinon, passez-la à `false`.
+- **Un worker de file d'attente** (`php artisan queue:work`) — les notifications
+  implémentent `ShouldQueue` et sont poussées sur la file `notifications`.
+- **Routes nommées** `dashboard` et `login` (ou configurées via `kerberos.redirects`,
+  voir Configuration).
+
+---
+
 ## Installation
 
 ### 1. Déclarer le dépôt dans `composer.json`
@@ -127,18 +144,61 @@ php artisan vendor:publish --tag=kerberos-config
 
 Cela crée `config/kerberos.php` dans votre application.
 
+### Modèle utilisateur
+
+Le package ne présume **pas** que votre modèle utilisateur est `App\Models\User`.
+Il le résout automatiquement dans cet ordre :
+
+1. `config('kerberos.user_model')` (override explicite)
+2. `config('auth.providers.users.model')` (défaut Laravel)
+3. `App\Models\User` (dernier recours)
+
+Aucune configuration n'est nécessaire dans la majorité des cas. Pour forcer un modèle
+spécifique :
+
+```php
+// config/kerberos.php
+'user_model' => \App\Models\Account::class,
+```
+
+### Routes de redirection
+
+Le package redirige vers des routes nommées de votre application. Par défaut
+`dashboard` (après login réussi) et `login` (accès refusé, fin de simulation, etc.).
+Si vos routes portent d'autres noms :
+
+```php
+// config/kerberos.php
+'redirects' => [
+    'success' => 'home',        // après authentification réussie
+    'login'   => 'auth.login',  // route de connexion / fallback
+],
+```
+
+ou via `.env` : `KERBEROS_SUCCESS_ROUTE` et `KERBEROS_LOGIN_ROUTE`.
+
 ### Variables d'environnement
 
 ```env
 KERBEROS_ENABLED=false                    # Active l'authentification Kerberos
 KERBEROS_SERVER_VAR=REMOTE_USER           # Variable serveur contenant le principal
-KERBEROS_FALLBACK_AUTH=true               # Autorise la connexion classique en fallback
+KERBEROS_FALLBACK_AUTH=true               # true = login classique en secours ; false = Kerberos strict (403 sans ticket)
 KERBEROS_SIMULATION_MODE=false            # Active le mode simulation (dév uniquement)
-KERBEROS_ADMIN_EMAILS=                    # Emails admins (séparés par virgule)
+KERBEROS_ADMIN_ROLE=Admin                 # Nom du rôle admin (destinataires des notifications)
+KERBEROS_ADMIN_EMAILS=                    # Emails admins (virgule). Si renseigné, notifie ces adresses ; sinon les users du rôle admin
 KERBEROS_ADMIN_NOTIFICATION_MODE=immediate # 'immediate' ou 'disabled'
 KERBEROS_AUTO_CLEANUP_DAYS=30             # Rétention des tentatives en jours
-KERBEROS_ALLOWED_DOMAINS=                 # Domaines autorisés (vide = tous)
+KERBEROS_ALLOWED_DOMAINS=                 # (non implémenté — réservé multi-realm)
 ```
+
+> **`KERBEROS_FALLBACK_AUTH=false`** impose Kerberos : une requête sans ticket reçoit
+> un `403`. Avec `true` (défaut), l'utilisateur sans ticket atteint le formulaire de
+> connexion classique de votre application.
+>
+> **Notifications admin :** avec `KERBEROS_ADMIN_EMAILS` renseigné, les emails sont
+> envoyés directement à ces adresses (mail on-demand, même sans compte User). Sinon,
+> les utilisateurs portant le rôle `KERBEROS_ADMIN_ROLE` sont notifiés. Si vous utilisez
+> une stratégie de rôle `relation` / `callable`, privilégiez `KERBEROS_ADMIN_EMAILS`.
 
 ### Routes exclues
 
@@ -285,6 +345,22 @@ Copie dans `resources/views/vendor/kerberos-auth/` :
     ├── simulate-kerberos.blade.php
     └── simulation-banner.blade.php
 ```
+
+---
+
+## Développement & tests
+
+```bash
+composer install
+composer test          # tests Pest
+composer analyse       # analyse statique PHPStan (niveau 5)
+composer format        # formatage Laravel Pint
+composer format:test   # vérifie le formatage sans modifier
+```
+
+Les tests s'appuient sur Orchestra Testbench + Pest, avec une base SQLite en
+mémoire et un modèle utilisateur de fixture (`tests/Fixtures/User.php`).
+La CI (`.github/workflows/ci.yml`) exécute Pint, PHPStan et Pest sur PHP 8.2 / 8.3 / 8.4.
 
 ---
 

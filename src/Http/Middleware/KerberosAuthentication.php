@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Http\Middleware;
 
 use Closure;
@@ -7,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use MokoGithub\KerberosAuth\DTOs\AuthResult;
 use MokoGithub\KerberosAuth\Services\KerberosAuthService;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 use Symfony\Component\HttpFoundation\Response;
 
 class KerberosAuthentication
@@ -43,18 +46,28 @@ class KerberosAuthentication
         $result = $this->kerberosService->authenticate();
 
         return match ($result->status) {
-            AuthResult::SUCCESS      => $this->handleSuccess($result, $request, $next),
-            AuthResult::NO_ROLE      => $this->handleNoRole($result),
+            AuthResult::SUCCESS => $this->handleSuccess($result, $request, $next),
+            AuthResult::NO_ROLE => $this->handleNoRole($result),
             AuthResult::UNKNOWN_USER => $this->handleUnknownUser($result),
-            default                  => $next($request),
+            AuthResult::NO_KERBEROS => $this->handleNoKerberos($request, $next),
+            default => $next($request),
         };
+    }
+
+    protected function handleNoKerberos(Request $request, Closure $next): Response
+    {
+        if (config('kerberos.fallback_auth', true)) {
+            return $next($request);
+        }
+
+        abort(403, 'Authentification Kerberos requise.');
     }
 
     protected function handleSuccess(AuthResult $result, Request $request, Closure $next): Response
     {
-        Auth::login($result->user, remember: true);
+        Auth::login($result->user, remember: (bool) config('kerberos.remember_login', true));
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route(Kerberos::successRoute()));
     }
 
     protected function handleNoRole(AuthResult $result): Response
@@ -65,7 +78,7 @@ class KerberosAuthentication
 
         session([
             'pending_kerberos' => $result->kerberos,
-            'pending_user_id'  => $result->user->id,
+            'pending_user_id' => $result->user->getAuthIdentifier(),
         ]);
 
         return redirect()->route('access-request.create');

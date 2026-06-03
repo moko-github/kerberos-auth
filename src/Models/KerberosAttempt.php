@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Models;
 
 use Carbon\Carbon;
@@ -12,6 +14,7 @@ class KerberosAttempt extends Model
     protected $fillable = [
         'kerberos',
         'result',
+        'user_id',
         'ip_address',
         'user_agent',
         'attempted_at',

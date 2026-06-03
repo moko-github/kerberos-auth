@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\DTOs;
 
-use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 class AuthResult
 {
@@ -16,7 +18,7 @@ class AuthResult
 
     public function __construct(
         public readonly string $status,
-        public readonly ?User $user = null,
+        public readonly ?Authenticatable $user = null,
         public readonly ?string $kerberos = null,
         public readonly ?string $message = null,
     ) {
@@ -56,7 +58,7 @@ class AuthResult
         };
     }
 
-    public static function success(User $user, string $kerberos): self
+    public static function success(Authenticatable $user, string $kerberos): self
     {
         return new self(status: self::SUCCESS, user: $user, kerberos: $kerberos);
     }
@@ -66,7 +68,7 @@ class AuthResult
         return new self(status: self::NO_KERBEROS);
     }
 
-    public static function noRole(User $user, string $kerberos): self
+    public static function noRole(Authenticatable $user, string $kerberos): self
     {
         return new self(status: self::NO_ROLE, user: $user, kerberos: $kerberos);
     }

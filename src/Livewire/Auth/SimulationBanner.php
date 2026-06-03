@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Livewire\Auth;
 
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use MokoGithub\KerberosAuth\Services\KerberosAuthService;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class SimulationBanner extends Component
 {
@@ -31,7 +34,7 @@ class SimulationBanner extends Component
         session()->invalidate();
         session()->regenerateToken();
 
-        redirect()->route('login')
+        redirect()->route(Kerberos::loginRoute())
             ->with('success', 'Simulation désactivée. Veuillez vous reconnecter.');
     }
 

@@ -1,0 +1,18 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - src
+        - database
+    excludePaths:
+        - tests/*
+    ignoreErrors:
+        # Larastan cannot resolve the package's namespaced views (registered at
+        # runtime via loadViewsFrom), so it reports the 'kerberos-auth::' view
+        # strings as non-view-string. These views do exist under resources/views.
+        -
+            identifier: argument.type
+            message: '#Parameter \#1 \$view of function view expects view-string\|null, string given\.#'
+            path: src/Livewire/Auth/*.php

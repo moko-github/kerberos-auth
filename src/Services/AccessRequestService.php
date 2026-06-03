@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Services;
 
-use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use MokoGithub\KerberosAuth\Models\AccessRequest;
 use MokoGithub\KerberosAuth\Models\Role;
 use MokoGithub\KerberosAuth\Notifications\AccessRequestAcceptedNotification;
 use MokoGithub\KerberosAuth\Notifications\AccessRequestRejectedNotification;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class AccessRequestService
 {
@@ -16,13 +20,15 @@ class AccessRequestService
         AccessRequest $accessRequest,
         int $roleId,
         ?string $adminMessage,
-        User $adminUser
+        Authenticatable $adminUser
     ): AccessRequest {
         return DB::transaction(function () use ($accessRequest, $roleId, $adminMessage, $adminUser) {
-            $user = User::find($accessRequest->user_id);
+            $userModel = Kerberos::userModel();
+
+            $user = $userModel::find($accessRequest->user_id);
 
             if (! $user) {
-                $user = User::create([
+                $user = $userModel::create([
                     'name' => $accessRequest->kerberos,
                     'email' => $accessRequest->kerberos,
                     'kerberos' => $accessRequest->kerberos,
@@ -30,19 +36,19 @@ class AccessRequestService
                     'role_id' => $roleId,
                 ]);
 
-                $accessRequest->update(['user_id' => $user->id]);
+                $accessRequest->update(['user_id' => $user->getKey()]);
             } else {
                 $user->update(['role_id' => $roleId]);
             }
 
             $accessRequest->update([
                 'status' => 'approved',
-                'processed_by' => $adminUser->id,
+                'processed_by' => $adminUser->getAuthIdentifier(),
                 'processed_at' => now(),
                 'admin_message' => $adminMessage,
             ]);
 
-            $user->notify(new AccessRequestAcceptedNotification($accessRequest, $adminMessage));
+            Notification::send($user, new AccessRequestAcceptedNotification($accessRequest, $adminMessage));
 
             return $accessRequest->fresh();
         });
@@ -51,18 +57,19 @@ class AccessRequestService
     public function reject(
         AccessRequest $accessRequest,
         string $adminMessage,
-        User $adminUser
+        Authenticatable $adminUser
     ): AccessRequest {
         return DB::transaction(function () use ($accessRequest, $adminMessage, $adminUser) {
             $accessRequest->update([
                 'status' => 'rejected',
-                'processed_by' => $adminUser->id,
+                'processed_by' => $adminUser->getAuthIdentifier(),
                 'processed_at' => now(),
                 'admin_message' => $adminMessage,
             ]);
 
             if ($accessRequest->user) {
-                $accessRequest->user->notify(
+                Notification::send(
+                    $accessRequest->user,
                     new AccessRequestRejectedNotification($accessRequest, $adminMessage)
                 );
             }

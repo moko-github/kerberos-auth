@@ -1,11 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Models;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
+/**
+ * @property int $id
+ * @property int|null $user_id
+ * @property string $kerberos
+ * @property string $justification
+ * @property string $status
+ * @property int|null $processed_by
+ * @property Carbon|null $processed_at
+ * @property string|null $admin_message
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 class AccessRequest extends Model
 {
     protected $fillable = [
@@ -27,12 +42,12 @@ class AccessRequest extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Kerberos::userModel());
     }
 
     public function processedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'processed_by');
+        return $this->belongsTo(Kerberos::userModel(), 'processed_by');
     }
 
     public function scopePending($query): mixed

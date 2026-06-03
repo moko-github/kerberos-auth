@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use MokoGithub\KerberosAuth\Models\AccessRequest;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class AccessRequestAcceptedNotification extends Notification implements ShouldQueue
 {
@@ -26,14 +27,14 @@ class AccessRequestAcceptedNotification extends Notification implements ShouldQu
 
     public function toMail(object $notifiable): MailMessage
     {
-        $roleName = $this->accessRequest->processedBy?->role?->name ?? 'User';
+        $roleName = data_get($this->accessRequest, 'processedBy.role.name', 'User');
 
         $mail = (new MailMessage)
             ->subject('✅ Demande d\'accès approuvée - '.config('app.name'))
             ->success()
             ->greeting('Votre demande d\'accès a été approuvée !')
             ->line("Rôle attribué : **{$roleName}**")
-            ->action('Se connecter', route('login'));
+            ->action('Se connecter', route(Kerberos::loginRoute()));
 
         if ($this->adminMessage) {
             $mail->line("Message de l'administrateur : {$this->adminMessage}");

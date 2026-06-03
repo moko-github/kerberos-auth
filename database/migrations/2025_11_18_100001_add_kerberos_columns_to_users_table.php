@@ -17,10 +17,21 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('users', 'kerberos')) {
+            return;
+        }
+
+        $hasUniqueIndex = collect(Schema::getIndexes('users'))
+            ->contains(fn (array $index) => $index['unique'] && in_array('kerberos', $index['columns'], true));
+
+        if ($hasUniqueIndex) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropUnique(['kerberos']);
+            });
+        }
+
         Schema::table('users', function (Blueprint $table) {
-            if (Schema::hasColumn('users', 'kerberos')) {
-                $table->dropColumn('kerberos');
-            }
+            $table->dropColumn('kerberos');
         });
     }
 };

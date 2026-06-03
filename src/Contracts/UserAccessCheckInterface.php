@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Contracts;
 
-use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 interface UserAccessCheckInterface
 {
@@ -13,5 +15,5 @@ interface UserAccessCheckInterface
      * Return false → user has no role / access (NO_ROLE) and is redirected
      *                to the access-request form.
      */
-    public function check(User $user): bool;
+    public function check(Authenticatable $user): bool;
 }

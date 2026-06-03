@@ -1,14 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Services;
 
-use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Notifications\Notification;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface;
 use MokoGithub\KerberosAuth\DTOs\AuthResult;
 use MokoGithub\KerberosAuth\Models\AccessRequest;
 use MokoGithub\KerberosAuth\Models\KerberosAttempt;
 use MokoGithub\KerberosAuth\Notifications\NewAccessRequestNotification;
 use MokoGithub\KerberosAuth\Notifications\UnknownKerberosAttemptNotification;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class KerberosAuthService
 {
@@ -20,7 +26,7 @@ class KerberosAuthService
 
         $serverVar = config('kerberos.server_variable', 'REMOTE_USER');
 
-        return $_SERVER[$serverVar] ?? null;
+        return request()->server($serverVar);
     }
 
     public function authenticate(): AuthResult
@@ -35,7 +41,9 @@ class KerberosAuthService
             return AuthResult::noKerberos();
         }
 
-        $user = User::where('kerberos', $kerberos)->first();
+        $userModel = Kerberos::userModel();
+
+        $user = $userModel::where('kerberos', $kerberos)->first();
 
         if (! $user) {
             $this->logAttempt($kerberos, 'unknown_user');
@@ -64,20 +72,20 @@ class KerberosAuthService
      *   'relation' — checks that a relation is not empty
      *   'callable' — delegates to a class implementing UserAccessCheckInterface
      */
-    protected function userHasRole(User $user): bool
+    protected function userHasRole(Authenticatable $user): bool
     {
         $strategy = config('kerberos.role_check.strategy', 'column');
 
         return match ($strategy) {
             'relation' => $user->{config('kerberos.role_check.relation', 'roles')}()->exists(),
             'callable' => $this->resolveCallable()->check($user),
-            default    => $this->checkColumn($user),
+            default => $this->checkColumn($user),
         };
     }
 
-    protected function checkColumn(User $user): bool
+    protected function checkColumn(Authenticatable $user): bool
     {
-        $column   = config('kerberos.role_check.column', 'role_id');
+        $column = config('kerberos.role_check.column', 'role_id');
         $operator = config('kerberos.role_check.operator', 'is_not_null');
 
         return $operator === 'is_null'
@@ -110,13 +118,13 @@ class KerberosAuthService
         return $instance;
     }
 
-    public function createAccessRequest(User $user, string $kerberos, string $justification): AccessRequest
+    public function createAccessRequest(Authenticatable $user, string $kerberos, string $justification): AccessRequest
     {
         $accessRequest = AccessRequest::create([
-            'user_id'       => $user->id,
-            'kerberos'      => $kerberos,
+            'user_id' => $user->getAuthIdentifier(),
+            'kerberos' => $kerberos,
             'justification' => $justification,
-            'status'        => 'pending',
+            'status' => 'pending',
         ]);
 
         $this->notifyAdminsNewRequest($accessRequest);
@@ -124,48 +132,63 @@ class KerberosAuthService
         return $accessRequest;
     }
 
-    public function logAttempt(string $kerberos, string $result, ?User $user = null): KerberosAttempt
+    public function logAttempt(string $kerberos, string $result, ?Authenticatable $user = null): KerberosAttempt
     {
         return KerberosAttempt::create([
-            'kerberos'     => $kerberos,
-            'result'       => $result,
-            'ip_address'   => request()->ip(),
-            'user_agent'   => request()->userAgent(),
+            'kerberos' => $kerberos,
+            'result' => $result,
+            'user_id' => $user?->getAuthIdentifier(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
             'attempted_at' => now(),
         ]);
     }
 
     public function notifyAdminsUnknownUser(string $kerberos): void
     {
-        if (config('kerberos.admin_notification_mode', 'immediate') === 'disabled') {
-            return;
-        }
-
-        foreach ($this->getAdminUsers() as $admin) {
-            $admin->notify(new UnknownKerberosAttemptNotification(
-                kerberos:    $kerberos,
-                ipAddress:   request()->ip() ?? '',
-                userAgent:   request()->userAgent() ?? '',
-                attemptedAt: now()
-            ));
-        }
+        $this->notifyAdmins(new UnknownKerberosAttemptNotification(
+            kerberos: $kerberos,
+            ipAddress: request()->ip() ?? '',
+            userAgent: request()->userAgent() ?? '',
+            attemptedAt: now()
+        ));
     }
 
     public function notifyAdminsNewRequest(AccessRequest $accessRequest): void
     {
+        $this->notifyAdmins(new NewAccessRequestNotification(accessRequest: $accessRequest));
+    }
+
+    /**
+     * Dispatch a notification to the application administrators.
+     *
+     * Recipients are resolved from kerberos.admin_notification_emails when set
+     * (on-demand mail), otherwise from the users holding the admin role.
+     */
+    protected function notifyAdmins(Notification $notification): void
+    {
         if (config('kerberos.admin_notification_mode', 'immediate') === 'disabled') {
             return;
         }
 
-        foreach ($this->getAdminUsers() as $admin) {
-            $admin->notify(new NewAccessRequestNotification(accessRequest: $accessRequest));
+        $emails = config('kerberos.admin_notification_emails', []);
+
+        if (! empty($emails)) {
+            NotificationFacade::route('mail', array_values((array) $emails))->notify($notification);
+
+            return;
         }
+
+        NotificationFacade::send($this->getAdminUsers(), $notification);
     }
 
-    protected function getAdminUsers(): \Illuminate\Support\Collection
+    protected function getAdminUsers(): Collection
     {
-        return User::whereHas('role', function ($query) {
-            $query->where('name', 'Admin');
+        $userModel = Kerberos::userModel();
+        $adminRole = config('kerberos.admin_role', 'Admin');
+
+        return $userModel::whereHas('role', function ($query) use ($adminRole) {
+            $query->where('name', $adminRole);
         })->get();
     }
 

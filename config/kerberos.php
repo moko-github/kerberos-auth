@@ -12,6 +12,40 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | User Model
+    |--------------------------------------------------------------------------
+    |
+    | The Eloquent model representing your application's users.
+    |
+    | null (default) : resolved automatically from
+    |                  config('auth.providers.users.model'), then falls back
+    |                  to App\Models\User.
+    | string         : explicit class name, e.g. \App\Models\Account::class.
+    |
+    */
+
+    'user_model' => env('KERBEROS_USER_MODEL'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Redirect Routes
+    |--------------------------------------------------------------------------
+    |
+    | Route names used by the package for its redirects.
+    |
+    | success : where the user is sent after a successful Kerberos login.
+    | login   : login / fallback route (access denied, simulation disable,
+    |           access-request submission, etc.).
+    |
+    */
+
+    'redirects' => [
+        'success' => env('KERBEROS_SUCCESS_ROUTE', 'dashboard'),
+        'login' => env('KERBEROS_LOGIN_ROUTE', 'login'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Server Variable Name
     |--------------------------------------------------------------------------
     */
@@ -22,9 +56,30 @@ return [
     |--------------------------------------------------------------------------
     | Fallback Authentication
     |--------------------------------------------------------------------------
+    |
+    | Controls what happens when Kerberos is enabled but no identifier is
+    | provided (user without a ticket, off-network, etc.).
+    |
+    | true  : let the request through so the user reaches the standard login
+    |         form (classic email/password fallback).
+    | false : strict Kerberos — no ticket means no access. The request is
+    |         aborted with a 403.
+    |
     */
 
     'fallback_auth' => env('KERBEROS_FALLBACK_AUTH', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Remember Login
+    |--------------------------------------------------------------------------
+    |
+    | Whether a successful Kerberos login sets the "remember me" cookie.
+    | Requires a remember_token column on the users table when true.
+    |
+    */
+
+    'remember_login' => env('KERBEROS_REMEMBER_LOGIN', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -39,11 +94,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Admin Role Name
+    |--------------------------------------------------------------------------
+    |
+    | Name of the role considered "administrator" when resolving notification
+    | recipients from the database (used only when admin_notification_emails
+    | is empty). Assumes the package's column/relation role model.
+    |
+    | For 'relation' / 'callable' role-check strategies (Spatie, custom), set
+    | admin_notification_emails explicitly instead.
+    |
+    */
+
+    'admin_role' => env('KERBEROS_ADMIN_ROLE', 'Admin'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Admin Notification Emails
     |--------------------------------------------------------------------------
     |
-    | Comma-separated email addresses. If empty, all Admin-role users
-    | are notified.
+    | Comma-separated email addresses that should receive admin notifications
+    | (new access request, unknown Kerberos attempt).
+    |
+    | If empty   : all users holding the admin role (see admin_role) are notified.
+    | If provided: these addresses are notified directly (on-demand mail),
+    |              whether or not they correspond to a User record.
     |
     */
 
@@ -151,7 +226,7 @@ return [
 
     'role_check' => [
         'strategy' => 'column',
-        'column'   => 'role_id',
+        'column' => 'role_id',
         'operator' => 'is_not_null',
         'relation' => 'roles',
         'callable' => null,
@@ -171,7 +246,7 @@ return [
 
     'install' => [
         'run_seeders' => true,
-        'seed_roles'  => true,
+        'seed_roles' => true,
     ],
 
 ];

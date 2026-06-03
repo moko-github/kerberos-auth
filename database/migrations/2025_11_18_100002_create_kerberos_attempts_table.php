@@ -12,12 +12,14 @@ return new class extends Migration
             $table->id();
             $table->string('kerberos');
             $table->enum('result', ['success', 'no_role', 'unknown_user']);
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->timestamp('attempted_at')->useCurrent();
 
             $table->index(['kerberos', 'attempted_at']);
             $table->index('attempted_at');
+            $table->index('user_id');
         });
     }
 

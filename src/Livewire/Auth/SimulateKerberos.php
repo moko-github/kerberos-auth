@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Livewire\Auth;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use MokoGithub\KerberosAuth\Services\KerberosAuthService;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class SimulateKerberos extends Component
 {
@@ -25,7 +27,9 @@ class SimulateKerberos extends Component
     #[Computed]
     public function availableKerberos(): Collection
     {
-        return User::whereNotNull('kerberos')
+        $userModel = Kerberos::userModel();
+
+        return $userModel::whereNotNull('kerberos')
             ->orderBy('kerberos')
             ->limit(10)
             ->get();
@@ -55,7 +59,7 @@ class SimulateKerberos extends Component
             $this->customKerberos = '';
             $this->selectedKerberos = null;
 
-            $this->redirect(route('dashboard'));
+            $this->redirect(route(Kerberos::successRoute()));
         } catch (\RuntimeException $e) {
             session()->flash('error', $e->getMessage());
         }

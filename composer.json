@@ -2,11 +2,36 @@
     "name": "moko-github/kerberos-auth",
     "description": "Kerberos SSO authentication package for Laravel (REMOTE_USER, demande d'acces, mode simulation)",
     "type": "library",
+    "keywords": [
+        "laravel",
+        "kerberos",
+        "sso",
+        "authentication",
+        "remote-user",
+        "single-sign-on"
+    ],
     "license": "proprietary",
+    "authors": [
+        {
+            "name": "moko-github",
+            "homepage": "https://github.com/moko-github"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/moko-github/kerberos-auth/issues",
+        "source": "https://github.com/moko-github/kerberos-auth"
+    },
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
         "livewire/livewire": "^3.0|^4.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^10.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0"
     },
     "autoload": {
         "psr-4": {
@@ -14,11 +39,29 @@
             "MokoGithub\\KerberosAuth\\Database\\Seeders\\": "database/seeders/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "MokoGithub\\KerberosAuth\\Tests\\": "tests/"
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
                 "MokoGithub\\KerberosAuth\\KerberosServiceProvider"
             ]
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "analyse": "vendor/bin/phpstan analyse",
+        "format": "vendor/bin/pint",
+        "format:test": "vendor/bin/pint --test"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
         }
     },
     "minimum-stability": "stable",
