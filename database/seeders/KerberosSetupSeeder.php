@@ -2,19 +2,21 @@
 
 namespace MokoGithub\KerberosAuth\Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use MokoGithub\KerberosAuth\Models\Role;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class KerberosSetupSeeder extends Seeder
 {
     public function run(): void
     {
+        $userModel = Kerberos::userModel();
+
         $userRole = Role::where('name', 'User')->first();
 
         if ($userRole) {
-            User::whereNull('role_id')->each(function (User $user) use ($userRole): void {
+            $userModel::whereNull('role_id')->each(function ($user) use ($userRole): void {
                 $user->role_id = $userRole->id;
                 $user->save();
             });
@@ -30,7 +32,7 @@ class KerberosSetupSeeder extends Seeder
             $adminData['status'] = \App\Enums\UserStatus::ACTIVE;
         }
 
-        $admin = User::firstOrCreate(
+        $admin = $userModel::firstOrCreate(
             ['email' => 'admin@example.com'],
             $adminData
         );

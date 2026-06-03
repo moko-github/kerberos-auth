@@ -2,9 +2,9 @@
 
 namespace MokoGithub\KerberosAuth\Livewire\Auth;
 
-use App\Models\User;
 use Livewire\Component;
 use MokoGithub\KerberosAuth\Services\KerberosAuthService;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class RequestAccess extends Component
 {
@@ -46,7 +46,9 @@ class RequestAccess extends Component
     {
         $this->validate();
 
-        $user = User::find($this->user_id);
+        $userModel = Kerberos::userModel();
+
+        $user = $userModel::find($this->user_id);
 
         if (! $user) {
             session()->flash('error', 'An error occurred. Please try again.');

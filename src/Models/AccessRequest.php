@@ -2,9 +2,9 @@
 
 namespace MokoGithub\KerberosAuth\Models;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class AccessRequest extends Model
 {
@@ -27,12 +27,12 @@ class AccessRequest extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Kerberos::userModel());
     }
 
     public function processedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'processed_by');
+        return $this->belongsTo(Kerberos::userModel(), 'processed_by');
     }
 
     public function scopePending($query): mixed

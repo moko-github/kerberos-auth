@@ -12,6 +12,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | User Model
+    |--------------------------------------------------------------------------
+    |
+    | The Eloquent model representing your application's users.
+    |
+    | null (default) : resolved automatically from
+    |                  config('auth.providers.users.model'), then falls back
+    |                  to App\Models\User.
+    | string         : explicit class name, e.g. \App\Models\Account::class.
+    |
+    */
+
+    'user_model' => env('KERBEROS_USER_MODEL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Server Variable Name
     |--------------------------------------------------------------------------
     */

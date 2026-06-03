@@ -127,6 +127,23 @@ php artisan vendor:publish --tag=kerberos-config
 
 Cela crée `config/kerberos.php` dans votre application.
 
+### Modèle utilisateur
+
+Le package ne présume **pas** que votre modèle utilisateur est `App\Models\User`.
+Il le résout automatiquement dans cet ordre :
+
+1. `config('kerberos.user_model')` (override explicite)
+2. `config('auth.providers.users.model')` (défaut Laravel)
+3. `App\Models\User` (dernier recours)
+
+Aucune configuration n'est nécessaire dans la majorité des cas. Pour forcer un modèle
+spécifique :
+
+```php
+// config/kerberos.php
+'user_model' => \App\Models\Account::class,
+```
+
 ### Variables d'environnement
 
 ```env

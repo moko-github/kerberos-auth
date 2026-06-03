@@ -6,7 +6,7 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
 
 ## 🔴 Critique — bloque la réutilisabilité
 
-### [1] Découplage du modèle User
+### [1] Découplage du modèle User ✅ FAIT (2026-06-03)
 **Fichiers impactés :** `src/Services/KerberosAuthService.php`, `src/Services/AccessRequestService.php`,
 `src/DTOs/AuthResult.php`, `src/Contracts/UserAccessCheckInterface.php`,
 `src/Models/AccessRequest.php`, `src/Models/Role.php`,

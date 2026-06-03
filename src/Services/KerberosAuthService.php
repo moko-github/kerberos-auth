@@ -2,13 +2,14 @@
 
 namespace MokoGithub\KerberosAuth\Services;
 
-use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface;
 use MokoGithub\KerberosAuth\DTOs\AuthResult;
 use MokoGithub\KerberosAuth\Models\AccessRequest;
 use MokoGithub\KerberosAuth\Models\KerberosAttempt;
 use MokoGithub\KerberosAuth\Notifications\NewAccessRequestNotification;
 use MokoGithub\KerberosAuth\Notifications\UnknownKerberosAttemptNotification;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class KerberosAuthService
 {
@@ -35,7 +36,9 @@ class KerberosAuthService
             return AuthResult::noKerberos();
         }
 
-        $user = User::where('kerberos', $kerberos)->first();
+        $userModel = Kerberos::userModel();
+
+        $user = $userModel::where('kerberos', $kerberos)->first();
 
         if (! $user) {
             $this->logAttempt($kerberos, 'unknown_user');
@@ -64,7 +67,7 @@ class KerberosAuthService
      *   'relation' — checks that a relation is not empty
      *   'callable' — delegates to a class implementing UserAccessCheckInterface
      */
-    protected function userHasRole(User $user): bool
+    protected function userHasRole(Authenticatable $user): bool
     {
         $strategy = config('kerberos.role_check.strategy', 'column');
 
@@ -75,7 +78,7 @@ class KerberosAuthService
         };
     }
 
-    protected function checkColumn(User $user): bool
+    protected function checkColumn(Authenticatable $user): bool
     {
         $column   = config('kerberos.role_check.column', 'role_id');
         $operator = config('kerberos.role_check.operator', 'is_not_null');
@@ -110,7 +113,7 @@ class KerberosAuthService
         return $instance;
     }
 
-    public function createAccessRequest(User $user, string $kerberos, string $justification): AccessRequest
+    public function createAccessRequest(Authenticatable $user, string $kerberos, string $justification): AccessRequest
     {
         $accessRequest = AccessRequest::create([
             'user_id'       => $user->id,
@@ -124,7 +127,7 @@ class KerberosAuthService
         return $accessRequest;
     }
 
-    public function logAttempt(string $kerberos, string $result, ?User $user = null): KerberosAttempt
+    public function logAttempt(string $kerberos, string $result, ?Authenticatable $user = null): KerberosAttempt
     {
         return KerberosAttempt::create([
             'kerberos'     => $kerberos,
@@ -164,7 +167,9 @@ class KerberosAuthService
 
     protected function getAdminUsers(): \Illuminate\Support\Collection
     {
-        return User::whereHas('role', function ($query) {
+        $userModel = Kerberos::userModel();
+
+        return $userModel::whereHas('role', function ($query) {
             $query->where('name', 'Admin');
         })->get();
     }

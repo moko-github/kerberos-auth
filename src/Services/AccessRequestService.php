@@ -2,13 +2,14 @@
 
 namespace MokoGithub\KerberosAuth\Services;
 
-use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use MokoGithub\KerberosAuth\Models\AccessRequest;
 use MokoGithub\KerberosAuth\Models\Role;
 use MokoGithub\KerberosAuth\Notifications\AccessRequestAcceptedNotification;
 use MokoGithub\KerberosAuth\Notifications\AccessRequestRejectedNotification;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class AccessRequestService
 {
@@ -16,13 +17,15 @@ class AccessRequestService
         AccessRequest $accessRequest,
         int $roleId,
         ?string $adminMessage,
-        User $adminUser
+        Authenticatable $adminUser
     ): AccessRequest {
         return DB::transaction(function () use ($accessRequest, $roleId, $adminMessage, $adminUser) {
-            $user = User::find($accessRequest->user_id);
+            $userModel = Kerberos::userModel();
+
+            $user = $userModel::find($accessRequest->user_id);
 
             if (! $user) {
-                $user = User::create([
+                $user = $userModel::create([
                     'name' => $accessRequest->kerberos,
                     'email' => $accessRequest->kerberos,
                     'kerberos' => $accessRequest->kerberos,
@@ -51,7 +54,7 @@ class AccessRequestService
     public function reject(
         AccessRequest $accessRequest,
         string $adminMessage,
-        User $adminUser
+        Authenticatable $adminUser
     ): AccessRequest {
         return DB::transaction(function () use ($accessRequest, $adminMessage, $adminUser) {
             $accessRequest->update([
