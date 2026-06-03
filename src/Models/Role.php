@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use MokoGithub\KerberosAuth\Support\Kerberos;
 
+/**
+ * @property int $id
+ * @property string $name
+ */
 class Role extends Model
 {
     protected $fillable = ['name'];

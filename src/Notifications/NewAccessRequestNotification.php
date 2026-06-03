@@ -41,7 +41,7 @@ class NewAccessRequestNotification extends Notification implements ShouldQueue
         return [
             'access_request_id' => $this->accessRequest->id,
             'kerberos' => $this->accessRequest->kerberos,
-            'user_name' => $this->accessRequest->user?->name,
+            'user_name' => data_get($this->accessRequest, 'user.name'),
             'justification' => $this->accessRequest->justification,
             'created_at' => $this->accessRequest->created_at->toISOString(),
         ];

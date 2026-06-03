@@ -6,7 +6,7 @@ use MokoGithub\KerberosAuth\DTOs\AuthResult;
 use MokoGithub\KerberosAuth\Tests\Fixtures\User;
 
 it('builds a success result', function () {
-    $user   = new User(['name' => 'A']);
+    $user = new User(['name' => 'A']);
     $result = AuthResult::success($user, 'a@krb');
 
     expect($result->status)->toBe(AuthResult::SUCCESS)

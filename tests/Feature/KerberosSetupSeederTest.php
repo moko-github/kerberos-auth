@@ -9,8 +9,8 @@ use MokoGithub\KerberosAuth\Tests\Fixtures\User;
 function makeUser(array $attributes = []): User
 {
     return User::create(array_merge([
-        'name'     => 'Jane',
-        'email'    => 'jane'.uniqid().'@example.com',
+        'name' => 'Jane',
+        'email' => 'jane'.uniqid().'@example.com',
         'password' => bcrypt('secret'),
     ], $attributes));
 }
@@ -21,7 +21,7 @@ describe('KerberosSetupSeeder', function () {
         Role::create(['name' => 'Admin']);
 
         $withoutRole = makeUser(['role_id' => null]);
-        $withRole    = makeUser(['role_id' => $userRole->id]);
+        $withRole = makeUser(['role_id' => $userRole->id]);
 
         (new KerberosSetupSeeder)->run();
 

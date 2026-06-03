@@ -13,8 +13,8 @@ use MokoGithub\KerberosAuth\Tests\Fixtures\User;
 function admin(): User
 {
     return User::create([
-        'name'     => 'Admin',
-        'email'    => 'admin'.uniqid().'@example.com',
+        'name' => 'Admin',
+        'email' => 'admin'.uniqid().'@example.com',
         'password' => bcrypt('secret'),
     ]);
 }

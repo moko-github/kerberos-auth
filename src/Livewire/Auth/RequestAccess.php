@@ -21,7 +21,7 @@ class RequestAccess extends Component
     public function mount(): void
     {
         $this->kerberos = session('pending_kerberos', '');
-        $this->user_id  = session('pending_user_id');
+        $this->user_id = session('pending_user_id');
 
         if (empty($this->kerberos)) {
             $this->redirect(route(Kerberos::loginRoute()), navigate: true);
@@ -39,8 +39,8 @@ class RequestAccess extends Component
     {
         return [
             'justification.required' => 'You must provide a justification for your access request.',
-            'justification.min'      => 'The justification must be at least 20 characters.',
-            'justification.max'      => 'The justification cannot exceed 500 characters.',
+            'justification.min' => 'The justification must be at least 20 characters.',
+            'justification.max' => 'The justification cannot exceed 500 characters.',
         ];
     }
 

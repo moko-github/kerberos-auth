@@ -108,15 +108,17 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
 
 ## 🔵 Outillage / CI
 
-### [12] CI GitHub Actions
-- Créer `.github/workflows/tests.yml` : PHP 8.2/8.3 × Laravel 12
-- Lancer `pest` + `phpstan` sur chaque PR
+### [12] CI GitHub Actions ✅ FAIT (2026-06-03)
+- `.github/workflows/ci.yml` : matrice PHP 8.2 / 8.3 / 8.4
+- Lance Pint (--test), PHPStan et Pest sur push/PR `main`
 
-### [13] `composer.json` incomplet
-- Ajouter `require-dev` : `orchestra/testbench`, `pestphp/pest`, `phpstan/phpstan`,
-  `laravel/pint`
-- Ajouter `scripts` : `test`, `analyse`, `format`
-- Ajouter `authors`, `keywords`, `support`
+### [13] `composer.json` incomplet ✅ FAIT (2026-06-03)
+- `require-dev` : larastan/larastan, laravel/pint (+ testbench, pest déjà là)
+- `scripts` : `test`, `analyse`, `format`, `format:test`
+- `authors`, `keywords`, `support` ajoutés
+- PHPStan niveau 5 (phpstan.neon), Pint preset laravel (pint.json)
+- Correctifs de typage : @property sur les modèles, getAuthIdentifier()/getKey(),
+  Notification::send(), data_get() pour les relations User génériques
 
 ### [14] Versioning & CHANGELOG
 - Créer `CHANGELOG.md`

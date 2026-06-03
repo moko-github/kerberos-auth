@@ -46,11 +46,11 @@ class KerberosAuthentication
         $result = $this->kerberosService->authenticate();
 
         return match ($result->status) {
-            AuthResult::SUCCESS      => $this->handleSuccess($result, $request, $next),
-            AuthResult::NO_ROLE      => $this->handleNoRole($result),
+            AuthResult::SUCCESS => $this->handleSuccess($result, $request, $next),
+            AuthResult::NO_ROLE => $this->handleNoRole($result),
             AuthResult::UNKNOWN_USER => $this->handleUnknownUser($result),
-            AuthResult::NO_KERBEROS  => $this->handleNoKerberos($request, $next),
-            default                  => $next($request),
+            AuthResult::NO_KERBEROS => $this->handleNoKerberos($request, $next),
+            default => $next($request),
         };
     }
 
@@ -78,7 +78,7 @@ class KerberosAuthentication
 
         session([
             'pending_kerberos' => $result->kerberos,
-            'pending_user_id'  => $result->user->id,
+            'pending_user_id' => $result->user->getAuthIdentifier(),
         ]);
 
         return redirect()->route('access-request.create');

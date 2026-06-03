@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MokoGithub\KerberosAuth\Database\Seeders;
 
+use App\Enums\UserStatus;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use MokoGithub\KerberosAuth\Models\Role;
@@ -13,8 +14,9 @@ class KerberosSetupSeeder extends Seeder
 {
     public function run(): void
     {
+        // Test account is for development/staging only — never seed it in production.
         if (app()->environment('production')) {
-            $this->command?->warn('KerberosSetupSeeder ignoré en production (compte de test non créé).');
+            logger()->warning('KerberosSetupSeeder ignoré en production (compte de test non créé).');
 
             return;
         }
@@ -36,8 +38,8 @@ class KerberosSetupSeeder extends Seeder
             'password' => Hash::make('password'),
         ];
 
-        if (class_exists(\App\Enums\UserStatus::class)) {
-            $adminData['status'] = \App\Enums\UserStatus::ACTIVE;
+        if (class_exists(UserStatus::class)) {
+            $adminData['status'] = UserStatus::ACTIVE;
         }
 
         $admin = $userModel::firstOrCreate(

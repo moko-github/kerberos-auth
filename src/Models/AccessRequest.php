@@ -6,8 +6,21 @@ namespace MokoGithub\KerberosAuth\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use MokoGithub\KerberosAuth\Support\Kerberos;
 
+/**
+ * @property int $id
+ * @property int|null $user_id
+ * @property string $kerberos
+ * @property string $justification
+ * @property string $status
+ * @property int|null $processed_by
+ * @property Carbon|null $processed_at
+ * @property string|null $admin_message
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 class AccessRequest extends Model
 {
     protected $fillable = [

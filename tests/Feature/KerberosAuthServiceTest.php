@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Notification;
+use MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface;
 use MokoGithub\KerberosAuth\DTOs\AuthResult;
 use MokoGithub\KerberosAuth\Models\KerberosAttempt;
+use MokoGithub\KerberosAuth\Models\Role;
 use MokoGithub\KerberosAuth\Notifications\UnknownKerberosAttemptNotification;
 use MokoGithub\KerberosAuth\Services\KerberosAuthService;
 use MokoGithub\KerberosAuth\Tests\Fixtures\User;
@@ -17,8 +20,8 @@ beforeEach(function () {
 function user(array $attributes = []): User
 {
     return User::create(array_merge([
-        'name'     => 'User',
-        'email'    => uniqid().'@example.com',
+        'name' => 'User',
+        'email' => uniqid().'@example.com',
         'password' => bcrypt('secret'),
     ], $attributes));
 }
@@ -42,7 +45,7 @@ it('returns unknown-user, logs the attempt and notifies admins', function () {
     Notification::fake();
 
     $admin = user(['kerberos' => 'admin@krb']);
-    $adminRole = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'Admin']);
+    $adminRole = Role::create(['name' => 'Admin']);
     $admin->update(['role_id' => $adminRole->id]);
 
     kerberos('ghost@krb');
@@ -77,7 +80,7 @@ it('notifies configured admin emails on-demand instead of admin users', function
 it('respects the configurable admin role when resolving recipients', function () {
     Notification::fake();
 
-    $role = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'Superviseur']);
+    $role = Role::create(['name' => 'Superviseur']);
     $supervisor = user(['kerberos' => 'sup@krb', 'role_id' => $role->id]);
     config()->set('kerberos.admin_role', 'Superviseur');
 
@@ -101,7 +104,7 @@ it('returns no-role for a known user without a role', function () {
 });
 
 it('returns success for a known user with a role', function () {
-    $role = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'User']);
+    $role = Role::create(['name' => 'User']);
     $alice = user(['kerberos' => 'alice@krb', 'role_id' => $role->id]);
 
     kerberos('alice@krb');
@@ -137,7 +140,7 @@ it('leaves user_id null on the attempt for unknown users', function () {
 
 describe('role_check strategies', function () {
     it('column / is_not_null grants access when the column is set', function () {
-        $role = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'User']);
+        $role = Role::create(['name' => 'User']);
         user(['kerberos' => 'c@krb', 'role_id' => $role->id]);
         kerberos('c@krb');
 
@@ -148,7 +151,7 @@ describe('role_check strategies', function () {
         config()->set('kerberos.role_check.strategy', 'relation');
         config()->set('kerberos.role_check.relation', 'role');
 
-        $role = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'User']);
+        $role = Role::create(['name' => 'User']);
         user(['kerberos' => 'rel@krb', 'role_id' => $role->id]);
         kerberos('rel@krb');
 
@@ -186,9 +189,9 @@ describe('role_check strategies', function () {
     })->throws(RuntimeException::class);
 });
 
-class AlwaysDeny implements \MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface
+class AlwaysDeny implements UserAccessCheckInterface
 {
-    public function check(\Illuminate\Contracts\Auth\Authenticatable $user): bool
+    public function check(Authenticatable $user): bool
     {
         return false;
     }

@@ -74,10 +74,11 @@ class KerberosInstallCommand extends Command
 
         if (str_contains($content, 'KerberosAuthentication')) {
             $this->line('  Middleware déjà enregistré, ignoré.');
+
             return;
         }
 
-        $inject  = "\n        \$middleware->appendToGroup('web', \\MokoGithub\\KerberosAuth\\Http\\Middleware\\KerberosAuthentication::class);";
+        $inject = "\n        \$middleware->appendToGroup('web', \\MokoGithub\\KerberosAuth\\Http\\Middleware\\KerberosAuthentication::class);";
         $inject .= "\n        \$middleware->alias(['kerberos.simulation' => \\MokoGithub\\KerberosAuth\\Http\\Middleware\\EnsureKerberosSimulationAllowed::class]);";
 
         $new = preg_replace(
@@ -92,6 +93,7 @@ class KerberosInstallCommand extends Command
             $this->warn('   Ajoutez manuellement dans bootstrap/app.php, dans ->withMiddleware(...) :');
             $this->line("       \$middleware->appendToGroup('web', \\MokoGithub\\KerberosAuth\\Http\\Middleware\\KerberosAuthentication::class);");
             $this->line("       \$middleware->alias(['kerberos.simulation' => \\MokoGithub\\KerberosAuth\\Http\\Middleware\\EnsureKerberosSimulationAllowed::class]);");
+
             return;
         }
 
@@ -102,7 +104,7 @@ class KerberosInstallCommand extends Command
     protected function configureUserModel(bool $withRoles): void
     {
         $userFile = base_path('app/Models/User.php');
-        $content  = File::get($userFile);
+        $content = File::get($userFile);
 
         if (! str_contains($content, "'kerberos'")) {
             $fillableAddition = $withRoles ? "'kerberos',\n        'role_id'," : "'kerberos',";
@@ -121,7 +123,7 @@ class KerberosInstallCommand extends Command
                 $this->line("       protected \$fillable = [..., {$hint}];");
             } else {
                 $content = $new;
-                $added   = $withRoles ? 'kerberos et role_id' : 'kerberos';
+                $added = $withRoles ? 'kerberos et role_id' : 'kerberos';
                 $this->line("  Champ(s) {$added} ajouté(s) au modèle User.");
             }
         } else {
@@ -132,7 +134,7 @@ class KerberosInstallCommand extends Command
             $roleMethod = "\n    public function role(): \\Illuminate\\Database\\Eloquent\\Relations\\BelongsTo\n    {\n        return \$this->belongsTo(\\MokoGithub\\KerberosAuth\\Models\\Role::class);\n    }\n";
 
             $lastBrace = strrpos($content, '}');
-            $content   = substr($content, 0, $lastBrace).$roleMethod.'}'.substr($content, $lastBrace + 1);
+            $content = substr($content, 0, $lastBrace).$roleMethod.'}'.substr($content, $lastBrace + 1);
             $this->line('  Relation role() ajoutée au modèle User.');
         } elseif ($withRoles) {
             $this->line('  Relation role() déjà présente, ignorée.');
@@ -143,11 +145,12 @@ class KerberosInstallCommand extends Command
 
     protected function configureRoutes(): void
     {
-        $routesFile     = base_path('routes/web.php');
-        $routesContent  = File::get($routesFile);
+        $routesFile = base_path('routes/web.php');
+        $routesContent = File::get($routesFile);
 
         if (str_contains($routesContent, 'access-request.create')) {
             $this->line('  Routes Kerberos déjà présentes, ignorées.');
+
             return;
         }
 
@@ -159,11 +162,12 @@ class KerberosInstallCommand extends Command
 
     protected function configureScheduler(): void
     {
-        $consoleFile    = base_path('routes/console.php');
+        $consoleFile = base_path('routes/console.php');
         $consoleContent = File::get($consoleFile);
 
         if (str_contains($consoleContent, 'kerberos:purge-attempts')) {
             $this->line('  Scheduler déjà configuré, ignoré.');
+
             return;
         }
 
@@ -183,6 +187,7 @@ class KerberosInstallCommand extends Command
 
         if (str_contains($content, 'KERBEROS_ENABLED')) {
             $this->line('  Variables .env déjà présentes, ignorées.');
+
             return;
         }
 
@@ -206,9 +211,9 @@ class KerberosInstallCommand extends Command
 
         if ($withRoles) {
             $this->call('migrate', [
-                '--path'     => $migrationsPath.'/2025_11_18_100000_create_roles_table.php',
+                '--path' => $migrationsPath.'/2025_11_18_100000_create_roles_table.php',
                 '--realpath' => true,
-                '--force'    => true,
+                '--force' => true,
             ]);
         }
 
@@ -218,9 +223,9 @@ class KerberosInstallCommand extends Command
             '2025_11_18_100003_create_access_requests_table.php',
         ] as $file) {
             $this->call('migrate', [
-                '--path'     => $migrationsPath.'/'.$file,
+                '--path' => $migrationsPath.'/'.$file,
                 '--realpath' => true,
-                '--force'    => true,
+                '--force' => true,
             ]);
         }
     }

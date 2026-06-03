@@ -41,7 +41,7 @@ return [
 
     'redirects' => [
         'success' => env('KERBEROS_SUCCESS_ROUTE', 'dashboard'),
-        'login'   => env('KERBEROS_LOGIN_ROUTE', 'login'),
+        'login' => env('KERBEROS_LOGIN_ROUTE', 'login'),
     ],
 
     /*
@@ -226,7 +226,7 @@ return [
 
     'role_check' => [
         'strategy' => 'column',
-        'column'   => 'role_id',
+        'column' => 'role_id',
         'operator' => 'is_not_null',
         'relation' => 'roles',
         'callable' => null,
@@ -246,7 +246,7 @@ return [
 
     'install' => [
         'run_seeders' => true,
-        'seed_roles'  => true,
+        'seed_roles' => true,
     ],
 
 ];

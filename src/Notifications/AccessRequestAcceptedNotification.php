@@ -27,7 +27,7 @@ class AccessRequestAcceptedNotification extends Notification implements ShouldQu
 
     public function toMail(object $notifiable): MailMessage
     {
-        $roleName = $this->accessRequest->processedBy?->role?->name ?? 'User';
+        $roleName = data_get($this->accessRequest, 'processedBy.role.name', 'User');
 
         $mail = (new MailMessage)
             ->subject('✅ Demande d\'accès approuvée - '.config('app.name'))

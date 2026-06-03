@@ -352,11 +352,15 @@ Copie dans `resources/views/vendor/kerberos-auth/` :
 
 ```bash
 composer install
-composer test        # ou : vendor/bin/pest
+composer test          # tests Pest
+composer analyse       # analyse statique PHPStan (niveau 5)
+composer format        # formatage Laravel Pint
+composer format:test   # vérifie le formatage sans modifier
 ```
 
 Les tests s'appuient sur Orchestra Testbench + Pest, avec une base SQLite en
 mémoire et un modèle utilisateur de fixture (`tests/Fixtures/User.php`).
+La CI (`.github/workflows/ci.yml`) exécute Pint, PHPStan et Pest sur PHP 8.2 / 8.3 / 8.4.
 
 ---
 
