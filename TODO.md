@@ -18,7 +18,7 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
 - `UserAccessCheckInterface::check()` et `AuthResult::$user` → typer sur
   `Illuminate\Contracts\Auth\Authenticatable` au lieu de `App\Models\User`
 
-### [2] Routes `dashboard` et `login` codées en dur
+### [2] Routes `dashboard` et `login` codées en dur ✅ FAIT (2026-06-03)
 **Fichiers impactés :** `src/Http/Middleware/KerberosAuthentication.php` (ligne 57),
 `src/Livewire/Auth/SimulateKerberos.php` (ligne 58),
 `src/Livewire/Auth/AccessDenied.php` (lignes 16, 24),

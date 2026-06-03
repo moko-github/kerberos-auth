@@ -57,7 +57,7 @@ class SimulateKerberos extends Component
             $this->customKerberos = '';
             $this->selectedKerberos = null;
 
-            $this->redirect(route('dashboard'));
+            $this->redirect(route(Kerberos::successRoute()));
         } catch (\RuntimeException $e) {
             session()->flash('error', $e->getMessage());
         }

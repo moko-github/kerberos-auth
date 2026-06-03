@@ -28,6 +28,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Redirect Routes
+    |--------------------------------------------------------------------------
+    |
+    | Route names used by the package for its redirects.
+    |
+    | success : where the user is sent after a successful Kerberos login.
+    | login   : login / fallback route (access denied, simulation disable,
+    |           access-request submission, etc.).
+    |
+    */
+
+    'redirects' => [
+        'success' => env('KERBEROS_SUCCESS_ROUTE', 'dashboard'),
+        'login'   => env('KERBEROS_LOGIN_ROUTE', 'login'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Server Variable Name
     |--------------------------------------------------------------------------
     */

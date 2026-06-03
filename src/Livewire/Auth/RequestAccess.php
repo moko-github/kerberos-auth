@@ -22,7 +22,7 @@ class RequestAccess extends Component
         $this->user_id  = session('pending_user_id');
 
         if (empty($this->kerberos)) {
-            $this->redirect(route('login'), navigate: true);
+            $this->redirect(route(Kerberos::loginRoute()), navigate: true);
         }
     }
 

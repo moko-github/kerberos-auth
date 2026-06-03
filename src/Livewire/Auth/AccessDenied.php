@@ -3,6 +3,7 @@
 namespace MokoGithub\KerberosAuth\Livewire\Auth;
 
 use Livewire\Component;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class AccessDenied extends Component
 {
@@ -13,7 +14,7 @@ class AccessDenied extends Component
         $this->kerberos = session('unknown_kerberos', '');
 
         if (empty($this->kerberos)) {
-            $this->redirect(route('login'), navigate: true);
+            $this->redirect(route(Kerberos::loginRoute()), navigate: true);
         }
     }
 
@@ -21,7 +22,7 @@ class AccessDenied extends Component
     {
         session()->forget('unknown_kerberos');
 
-        $this->redirect(route('login'), navigate: true);
+        $this->redirect(route(Kerberos::loginRoute()), navigate: true);
     }
 
     public function render(): mixed

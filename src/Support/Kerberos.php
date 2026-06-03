@@ -22,4 +22,20 @@ class Kerberos
 
         return ltrim($model, '\\');
     }
+
+    /**
+     * Route name users are redirected to after a successful Kerberos login.
+     */
+    public static function successRoute(): string
+    {
+        return config('kerberos.redirects.success', 'dashboard');
+    }
+
+    /**
+     * Route name used for the login / fallback redirect.
+     */
+    public static function loginRoute(): string
+    {
+        return config('kerberos.redirects.login', 'login');
+    }
 }

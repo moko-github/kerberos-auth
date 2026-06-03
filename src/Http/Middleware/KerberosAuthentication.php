@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use MokoGithub\KerberosAuth\DTOs\AuthResult;
 use MokoGithub\KerberosAuth\Services\KerberosAuthService;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 use Symfony\Component\HttpFoundation\Response;
 
 class KerberosAuthentication
@@ -54,7 +55,7 @@ class KerberosAuthentication
     {
         Auth::login($result->user, remember: true);
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route(Kerberos::successRoute()));
     }
 
     protected function handleNoRole(AuthResult $result): Response

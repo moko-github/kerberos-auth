@@ -144,6 +144,22 @@ spécifique :
 'user_model' => \App\Models\Account::class,
 ```
 
+### Routes de redirection
+
+Le package redirige vers des routes nommées de votre application. Par défaut
+`dashboard` (après login réussi) et `login` (accès refusé, fin de simulation, etc.).
+Si vos routes portent d'autres noms :
+
+```php
+// config/kerberos.php
+'redirects' => [
+    'success' => 'home',        // après authentification réussie
+    'login'   => 'auth.login',  // route de connexion / fallback
+],
+```
+
+ou via `.env` : `KERBEROS_SUCCESS_ROUTE` et `KERBEROS_LOGIN_ROUTE`.
+
 ### Variables d'environnement
 
 ```env
