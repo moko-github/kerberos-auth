@@ -56,6 +56,15 @@ return [
     |--------------------------------------------------------------------------
     | Fallback Authentication
     |--------------------------------------------------------------------------
+    |
+    | Controls what happens when Kerberos is enabled but no identifier is
+    | provided (user without a ticket, off-network, etc.).
+    |
+    | true  : let the request through so the user reaches the standard login
+    |         form (classic email/password fallback).
+    | false : strict Kerberos — no ticket means no access. The request is
+    |         aborted with a 403.
+    |
     */
 
     'fallback_auth' => env('KERBEROS_FALLBACK_AUTH', true),
@@ -73,11 +82,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Admin Role Name
+    |--------------------------------------------------------------------------
+    |
+    | Name of the role considered "administrator" when resolving notification
+    | recipients from the database (used only when admin_notification_emails
+    | is empty). Assumes the package's column/relation role model.
+    |
+    | For 'relation' / 'callable' role-check strategies (Spatie, custom), set
+    | admin_notification_emails explicitly instead.
+    |
+    */
+
+    'admin_role' => env('KERBEROS_ADMIN_ROLE', 'Admin'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Admin Notification Emails
     |--------------------------------------------------------------------------
     |
-    | Comma-separated email addresses. If empty, all Admin-role users
-    | are notified.
+    | Comma-separated email addresses that should receive admin notifications
+    | (new access request, unknown Kerberos attempt).
+    |
+    | If empty   : all users holding the admin role (see admin_role) are notified.
+    | If provided: these addresses are notified directly (on-demand mail),
+    |              whether or not they correspond to a User record.
     |
     */
 

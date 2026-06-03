@@ -50,19 +50,24 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
 
 ## 🟠 Important — config morte & incohérences
 
-### [4] Trois clés de config documentées mais jamais utilisées
-- **`allowed_domains`** : implémenter la validation de domaine dans `KerberosAuthService::authenticate()`
-  → extraire le domaine du principal (`user@DOMAIN`) et vérifier contre la whitelist
-- **`fallback_auth`** : consommer la clé dans le middleware pour autoriser ou non l'accès sans Kerberos
-- **`admin_notification_emails`** : consommer dans `getAdminUsers()` — si la clé est remplie,
-  résoudre les Users par email plutôt que par relation `role`
+### [4] Clés de config documentées mais jamais utilisées
+- **`fallback_auth`** ✅ FAIT (2026-06-03) : consommée dans le middleware
+  (`handleNoKerberos`) — `false` = Kerberos strict (403), `true` = login de secours.
+- **`admin_notification_emails`** ✅ FAIT (2026-06-03) : consommée via `notifyAdmins()`
+  — si remplie, notification on-demand par mail ; sinon, users du rôle admin.
+- **`allowed_domains`** ⏸️ EN ATTENTE : environnement mono-domaine Kerberos chez le
+  client (filtré en amont par le serveur web). À implémenter **si** passage en
+  multi-realm un jour. Sinon, candidate à suppression.
+  → validation dans `authenticate()` : extraire le domaine du principal
+  (`user@DOMAIN`) et vérifier contre la whitelist.
 
-### [5] `getAdminUsers()` : couplage au rôle 'Admin' + contradiction avec la config
-**Fichier :** `src/Services/KerberosAuthService.php` ligne 165
+### [5] `getAdminUsers()` : couplage au rôle 'Admin' ✅ FAIT (2026-06-03)
+**Fichier :** `src/Services/KerberosAuthService.php`
 
-- Actuellement `whereHas('role', fn → name = 'Admin')` : casse les stratégies `relation` et `callable`
-- Si `kerberos.admin_notification_emails` est renseigné → résoudre par email (`User::whereIn('email', …)`)
-- Sinon, garder la logique Admin-role mais la rendre configurable (nom du rôle admin configurable)
+- Nom du rôle admin désormais configurable via `kerberos.admin_role` (défaut 'Admin')
+- Pour les stratégies `relation` / `callable` (Spatie, custom) qui n'ont pas la
+  relation `role`, renseigner `admin_notification_emails` (notification on-demand)
+  — documenté dans la config.
 
 ### [6] `logAttempt($user)` ignore son paramètre `$user`
 **Fichier :** `src/Services/KerberosAuthService.php` ligne 127,

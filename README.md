@@ -165,13 +165,23 @@ ou via `.env` : `KERBEROS_SUCCESS_ROUTE` et `KERBEROS_LOGIN_ROUTE`.
 ```env
 KERBEROS_ENABLED=false                    # Active l'authentification Kerberos
 KERBEROS_SERVER_VAR=REMOTE_USER           # Variable serveur contenant le principal
-KERBEROS_FALLBACK_AUTH=true               # Autorise la connexion classique en fallback
+KERBEROS_FALLBACK_AUTH=true               # true = login classique en secours ; false = Kerberos strict (403 sans ticket)
 KERBEROS_SIMULATION_MODE=false            # Active le mode simulation (dév uniquement)
-KERBEROS_ADMIN_EMAILS=                    # Emails admins (séparés par virgule)
+KERBEROS_ADMIN_ROLE=Admin                 # Nom du rôle admin (destinataires des notifications)
+KERBEROS_ADMIN_EMAILS=                    # Emails admins (virgule). Si renseigné, notifie ces adresses ; sinon les users du rôle admin
 KERBEROS_ADMIN_NOTIFICATION_MODE=immediate # 'immediate' ou 'disabled'
 KERBEROS_AUTO_CLEANUP_DAYS=30             # Rétention des tentatives en jours
-KERBEROS_ALLOWED_DOMAINS=                 # Domaines autorisés (vide = tous)
+KERBEROS_ALLOWED_DOMAINS=                 # (non implémenté — réservé multi-realm)
 ```
+
+> **`KERBEROS_FALLBACK_AUTH=false`** impose Kerberos : une requête sans ticket reçoit
+> un `403`. Avec `true` (défaut), l'utilisateur sans ticket atteint le formulaire de
+> connexion classique de votre application.
+>
+> **Notifications admin :** avec `KERBEROS_ADMIN_EMAILS` renseigné, les emails sont
+> envoyés directement à ces adresses (mail on-demand, même sans compte User). Sinon,
+> les utilisateurs portant le rôle `KERBEROS_ADMIN_ROLE` sont notifiés. Si vous utilisez
+> une stratégie de rôle `relation` / `callable`, privilégiez `KERBEROS_ADMIN_EMAILS`.
 
 ### Routes exclues
 

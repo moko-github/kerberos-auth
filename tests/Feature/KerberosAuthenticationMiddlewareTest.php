@@ -58,3 +58,15 @@ it('redirects an unknown identifier to the access-denied page', function () {
     $this->get('/protected')->assertRedirect(route('access-denied'));
     $this->assertGuest();
 });
+
+it('falls through to the login form when fallback_auth is enabled and no ticket', function () {
+    config()->set('kerberos.fallback_auth', true);
+
+    $this->get('/protected')->assertOk()->assertSee('protected');
+});
+
+it('aborts with 403 when fallback_auth is disabled and no ticket', function () {
+    config()->set('kerberos.fallback_auth', false);
+
+    $this->get('/protected')->assertForbidden();
+});

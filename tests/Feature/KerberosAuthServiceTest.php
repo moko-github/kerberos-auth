@@ -56,6 +56,37 @@ it('returns unknown-user, logs the attempt and notifies admins', function () {
     Notification::assertSentTo($admin, UnknownKerberosAttemptNotification::class);
 });
 
+it('notifies configured admin emails on-demand instead of admin users', function () {
+    Notification::fake();
+
+    config()->set('kerberos.admin_notification_emails', ['rssi@example.com', 'it@example.com']);
+
+    $_SERVER['REMOTE_USER'] = 'ghost@krb';
+
+    $this->service->authenticate();
+
+    Notification::assertSentOnDemand(
+        UnknownKerberosAttemptNotification::class,
+        function ($notification, $channels, $notifiable) {
+            return in_array('rssi@example.com', (array) $notifiable->routes['mail'], true);
+        }
+    );
+});
+
+it('respects the configurable admin role when resolving recipients', function () {
+    Notification::fake();
+
+    $role = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'Superviseur']);
+    $supervisor = user(['kerberos' => 'sup@krb', 'role_id' => $role->id]);
+    config()->set('kerberos.admin_role', 'Superviseur');
+
+    $_SERVER['REMOTE_USER'] = 'ghost@krb';
+
+    $this->service->authenticate();
+
+    Notification::assertSentTo($supervisor, UnknownKerberosAttemptNotification::class);
+});
+
 it('returns no-role for a known user without a role', function () {
     user(['kerberos' => 'bob@krb', 'role_id' => null]);
 

@@ -3,6 +3,8 @@
 namespace MokoGithub\KerberosAuth\Services;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use MokoGithub\KerberosAuth\Contracts\UserAccessCheckInterface;
 use MokoGithub\KerberosAuth\DTOs\AuthResult;
 use MokoGithub\KerberosAuth\Models\AccessRequest;
@@ -140,37 +142,51 @@ class KerberosAuthService
 
     public function notifyAdminsUnknownUser(string $kerberos): void
     {
-        if (config('kerberos.admin_notification_mode', 'immediate') === 'disabled') {
-            return;
-        }
-
-        foreach ($this->getAdminUsers() as $admin) {
-            $admin->notify(new UnknownKerberosAttemptNotification(
-                kerberos:    $kerberos,
-                ipAddress:   request()->ip() ?? '',
-                userAgent:   request()->userAgent() ?? '',
-                attemptedAt: now()
-            ));
-        }
+        $this->notifyAdmins(new UnknownKerberosAttemptNotification(
+            kerberos:    $kerberos,
+            ipAddress:   request()->ip() ?? '',
+            userAgent:   request()->userAgent() ?? '',
+            attemptedAt: now()
+        ));
     }
 
     public function notifyAdminsNewRequest(AccessRequest $accessRequest): void
+    {
+        $this->notifyAdmins(new NewAccessRequestNotification(accessRequest: $accessRequest));
+    }
+
+    /**
+     * Dispatch a notification to the application administrators.
+     *
+     * Recipients are resolved from kerberos.admin_notification_emails when set
+     * (on-demand mail), otherwise from the users holding the admin role.
+     */
+    protected function notifyAdmins(Notification $notification): void
     {
         if (config('kerberos.admin_notification_mode', 'immediate') === 'disabled') {
             return;
         }
 
+        $emails = config('kerberos.admin_notification_emails', []);
+
+        if (! empty($emails)) {
+            NotificationFacade::route('mail', array_values((array) $emails))->notify($notification);
+
+            return;
+        }
+
         foreach ($this->getAdminUsers() as $admin) {
-            $admin->notify(new NewAccessRequestNotification(accessRequest: $accessRequest));
+            $admin->notify($notification);
         }
     }
 
     protected function getAdminUsers(): \Illuminate\Support\Collection
     {
         $userModel = Kerberos::userModel();
+        $adminRole = config('kerberos.admin_role', 'Admin');
 
-        return $userModel::whereHas('role', function ($query) {
-            $query->where('name', 'Admin');
+        return $userModel::whereHas('role', function ($query) use ($adminRole) {
+            $query->where('name', $adminRole);
         })->get();
     }
 

@@ -47,8 +47,18 @@ class KerberosAuthentication
             AuthResult::SUCCESS      => $this->handleSuccess($result, $request, $next),
             AuthResult::NO_ROLE      => $this->handleNoRole($result),
             AuthResult::UNKNOWN_USER => $this->handleUnknownUser($result),
+            AuthResult::NO_KERBEROS  => $this->handleNoKerberos($request, $next),
             default                  => $next($request),
         };
+    }
+
+    protected function handleNoKerberos(Request $request, Closure $next): Response
+    {
+        if (config('kerberos.fallback_auth', true)) {
+            return $next($request);
+        }
+
+        abort(403, 'Authentification Kerberos requise.');
     }
 
     protected function handleSuccess(AuthResult $result, Request $request, Closure $next): Response
