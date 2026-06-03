@@ -29,17 +29,19 @@ class AccessRequestAcceptedNotification extends Notification implements ShouldQu
     {
         $roleName = data_get($this->accessRequest, 'processedBy.role.name', 'User');
 
+        $app = config('app.name');
+
         $mail = (new MailMessage)
-            ->subject('✅ Demande d\'accès approuvée - '.config('app.name'))
+            ->subject(__('kerberos-auth::kerberos.notif.accepted.subject', ['app' => $app]))
             ->success()
-            ->greeting('Votre demande d\'accès a été approuvée !')
-            ->line("Rôle attribué : **{$roleName}**")
-            ->action('Se connecter', route(Kerberos::loginRoute()));
+            ->greeting(__('kerberos-auth::kerberos.notif.accepted.greeting'))
+            ->line(__('kerberos-auth::kerberos.notif.accepted.line_role', ['role' => $roleName]))
+            ->action(__('kerberos-auth::kerberos.notif.accepted.action'), route(Kerberos::loginRoute()));
 
         if ($this->adminMessage) {
-            $mail->line("Message de l'administrateur : {$this->adminMessage}");
+            $mail->line(__('kerberos-auth::kerberos.notif.accepted.line_message', ['message' => $this->adminMessage]));
         }
 
-        return $mail->salutation('— '.config('app.name'));
+        return $mail->salutation(__('kerberos-auth::kerberos.notif.unknown_attempt.salutation', ['app' => $app]));
     }
 }

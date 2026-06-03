@@ -46,7 +46,7 @@ class SimulateKerberos extends Component
         $kerberos = ! empty($this->customKerberos) ? $this->customKerberos : $this->selectedKerberos;
 
         if (empty($kerberos)) {
-            session()->flash('error', 'Please enter or select a Kerberos identifier.');
+            session()->flash('error', __('kerberos-auth::kerberos.flash.error_empty_kerberos'));
 
             return;
         }
@@ -72,7 +72,7 @@ class SimulateKerberos extends Component
 
         $this->currentSimulation = null;
 
-        session()->flash('success', 'Simulation disabled.');
+        session()->flash('success', __('kerberos-auth::kerberos.flash.simulation_disabled'));
     }
 
     public function render(): mixed

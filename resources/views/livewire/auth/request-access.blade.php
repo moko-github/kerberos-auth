@@ -3,8 +3,8 @@
         <div class="flex flex-col gap-6">
 
             <div>
-                <h1 class="text-xl font-semibold text-gray-900">{{ __("Demande d'accès envoyée") }}</h1>
-                <p class="text-sm text-gray-500 mt-1">{{ __('Votre demande a été transmise aux administrateurs') }}</p>
+                <h1 class="text-xl font-semibold text-gray-900">{{ __('kerberos-auth::kerberos.request_access.sent_title') }}</h1>
+                <p class="text-sm text-gray-500 mt-1">{{ __('kerberos-auth::kerberos.request_access.sent_subtitle') }}</p>
             </div>
 
             <div class="rounded-xl border border-green-300 bg-green-50 p-6">
@@ -15,15 +15,15 @@
                         </svg>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <p class="text-gray-700">Votre demande d'accès a bien été envoyée aux administrateurs.</p>
-                        <p class="text-sm text-gray-500">Vous serez notifié par email dès que votre demande aura été traitée.</p>
+                        <p class="text-gray-700">{{ __('kerberos-auth::kerberos.request_access.sent_body') }}</p>
+                        <p class="text-sm text-gray-500">{{ __('kerberos-auth::kerberos.request_access.sent_notification') }}</p>
                     </div>
                     <div class="mt-2">
                         <a href="{{ route('login') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                             </svg>
-                            Retour à la connexion
+                            {{ __('kerberos-auth::kerberos.request_access.back_button') }}
                         </a>
                     </div>
                 </div>
@@ -34,8 +34,8 @@
         <div class="flex flex-col gap-6">
 
             <div>
-                <h1 class="text-xl font-semibold text-gray-900">{{ __("Demande d'accès") }}</h1>
-                <p class="text-sm text-gray-500 mt-1">{{ __("Votre compte n'a pas encore de rôle attribué. Veuillez remplir ce formulaire.") }}</p>
+                <h1 class="text-xl font-semibold text-gray-900">{{ __('kerberos-auth::kerberos.request_access.title') }}</h1>
+                <p class="text-sm text-gray-500 mt-1">{{ __('kerberos-auth::kerberos.request_access.subtitle') }}</p>
             </div>
 
             <div class="rounded-xl border border-yellow-300 bg-yellow-50 p-4">
@@ -44,9 +44,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                     </svg>
                     <div class="flex flex-col gap-1">
-                        <p class="font-medium text-gray-900">Compte sans rôle</p>
+                        <p class="font-medium text-gray-900">{{ __('kerberos-auth::kerberos.request_access.no_role_title') }}</p>
                         <p class="text-sm text-gray-600">
-                            Votre identifiant Kerberos <strong>{{ $kerberos }}</strong> est reconnu, mais votre compte n'a aucun rôle attribué. Veuillez justifier votre demande d'accès ci-dessous.
+                            {!! __('kerberos-auth::kerberos.request_access.no_role_body', ['kerberos' => e($kerberos)]) !!}
                         </p>
                     </div>
                 </div>
@@ -55,29 +55,29 @@
             <form wire:submit="submit" class="flex flex-col gap-5">
 
                 <div class="flex flex-col gap-1">
-                    <label class="text-sm font-medium text-gray-700">Identifiant Kerberos</label>
+                    <label class="text-sm font-medium text-gray-700">{{ __('kerberos-auth::kerberos.request_access.kerberos_label') }}</label>
                     <input
                         wire:model="kerberos"
                         type="text"
                         readonly
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 text-sm cursor-not-allowed"
                     />
-                    <p class="text-xs text-gray-400">Votre identifiant Kerberos détecté automatiquement</p>
+                    <p class="text-xs text-gray-400">{{ __('kerberos-auth::kerberos.request_access.kerberos_hint') }}</p>
                 </div>
 
                 <div class="flex flex-col gap-1">
                     <label class="text-sm font-medium text-gray-700">
-                        Justification de votre demande
+                        {{ __('kerberos-auth::kerberos.request_access.justification_label') }}
                         <span class="text-red-500">*</span>
                     </label>
                     <textarea
                         wire:model="justification"
                         rows="5"
                         required
-                        placeholder="Expliquez pourquoi vous avez besoin d'accéder à l'application (minimum 20 caractères)..."
+                        placeholder="{{ __('kerberos-auth::kerberos.request_access.justification_placeholder') }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     ></textarea>
-                    <p class="text-xs text-gray-400">Minimum 20 caractères, maximum 500 caractères</p>
+                    <p class="text-xs text-gray-400">{{ __('kerberos-auth::kerberos.request_access.justification_hint') }}</p>
                     @error('justification')
                         <p class="text-xs text-red-600">{{ $message }}</p>
                     @enderror
@@ -89,7 +89,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                         </svg>
                         <p class="text-sm text-gray-600">
-                            Les administrateurs recevront votre demande par email et vous serez notifié une fois celle-ci traitée.
+                            {{ __('kerberos-auth::kerberos.request_access.admin_info') }}
                         </p>
                     </div>
                 </div>
@@ -107,8 +107,8 @@
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 5.373 0 0 12h4z"></path>
                         </svg>
-                        <span wire:loading.remove wire:target="submit">Envoyer la demande d'accès</span>
-                        <span wire:loading wire:target="submit">Envoi en cours...</span>
+                        <span wire:loading.remove wire:target="submit">{{ __('kerberos-auth::kerberos.request_access.submit_button') }}</span>
+                        <span wire:loading wire:target="submit">{{ __('kerberos-auth::kerberos.request_access.submitting') }}</span>
                     </button>
 
                     <a
@@ -118,7 +118,7 @@
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                         </svg>
-                        Retour à la connexion
+                        {{ __('kerberos-auth::kerberos.request_access.cancel_button') }}
                     </a>
                 </div>
 

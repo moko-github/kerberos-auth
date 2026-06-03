@@ -2,8 +2,8 @@
     <div class="flex flex-col gap-6">
 
         <div>
-            <h1 class="text-xl font-semibold text-gray-900">{{ __('Accès refusé') }}</h1>
-            <p class="text-sm text-gray-500 mt-1">{{ __("Votre identifiant Kerberos n'est pas reconnu") }}</p>
+            <h1 class="text-xl font-semibold text-gray-900">{{ __('kerberos-auth::kerberos.access_denied.title') }}</h1>
+            <p class="text-sm text-gray-500 mt-1">{{ __('kerberos-auth::kerberos.access_denied.subtitle') }}</p>
         </div>
 
         <div class="rounded-xl border border-red-300 bg-red-50 p-5">
@@ -15,8 +15,8 @@
                     </svg>
                     <div class="flex flex-col gap-3">
                         <div>
-                            <p class="font-semibold text-lg text-gray-900">Identifiant non reconnu</p>
-                            <p class="text-sm text-gray-600 mt-1">L'identifiant Kerberos suivant n'est pas enregistré dans notre système :</p>
+                            <p class="font-semibold text-lg text-gray-900">{{ __('kerberos-auth::kerberos.access_denied.unknown_id') }}</p>
+                            <p class="text-sm text-gray-600 mt-1">{{ __('kerberos-auth::kerberos.access_denied.not_registered') }}</p>
                         </div>
                         <div class="bg-white rounded-lg p-4 border border-gray-200">
                             <p class="font-mono text-sm text-red-600 font-medium">{{ $kerberos }}</p>
@@ -26,7 +26,7 @@
                                 <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                 </svg>
-                                <p class="text-sm text-gray-600">Les administrateurs ont été automatiquement notifiés de cette tentative de connexion. Si vous pensez qu'il s'agit d'une erreur, veuillez contacter votre service informatique.</p>
+                                <p class="text-sm text-gray-600">{{ __('kerberos-auth::kerberos.access_denied.admins_notified') }}</p>
                             </div>
                         </div>
                     </div>
@@ -35,11 +35,11 @@
                 <hr class="border-red-200" />
 
                 <div class="flex flex-col gap-2">
-                    <p class="text-sm font-medium text-gray-900">Que faire ?</p>
+                    <p class="text-sm font-medium text-gray-900">{{ __('kerberos-auth::kerberos.access_denied.what_to_do') }}</p>
                     <ul class="list-disc list-inside text-sm text-gray-600 space-y-1 ml-2">
-                        <li>Assurez-vous d'être connecté au réseau de l'entreprise</li>
-                        <li>Contactez votre service informatique pour vérifier votre compte</li>
-                        <li>Utilisez le formulaire de connexion classique si vous disposez d'un compte local</li>
+                        <li>{{ __('kerberos-auth::kerberos.access_denied.tip_network') }}</li>
+                        <li>{{ __('kerberos-auth::kerberos.access_denied.tip_it') }}</li>
+                        <li>{{ __('kerberos-auth::kerberos.access_denied.tip_local') }}</li>
                     </ul>
                 </div>
 
@@ -59,11 +59,11 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 5.373 0 0 12h4z"></path>
                 </svg>
-                Retour à la page de connexion
+                {{ __('kerberos-auth::kerberos.access_denied.back_button') }}
             </button>
 
             <div class="text-center">
-                <p class="text-xs text-gray-400">Tentative le {{ now()->format('d/m/Y à H:i:s') }}</p>
+                <p class="text-xs text-gray-400">{{ __('kerberos-auth::kerberos.access_denied.attempt_time', ['datetime' => now()->format('d/m/Y à H:i:s')]) }}</p>
             </div>
         </div>
 

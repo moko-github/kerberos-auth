@@ -35,7 +35,7 @@ class SimulationBanner extends Component
         session()->regenerateToken();
 
         redirect()->route(Kerberos::loginRoute())
-            ->with('success', 'Simulation désactivée. Veuillez vous reconnecter.');
+            ->with('success', __('kerberos-auth::kerberos.flash.simulation_banner_logout'));
     }
 
     public function getIsActiveProperty(): bool

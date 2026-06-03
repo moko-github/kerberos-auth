@@ -38,9 +38,9 @@ class RequestAccess extends Component
     protected function messages(): array
     {
         return [
-            'justification.required' => 'You must provide a justification for your access request.',
-            'justification.min' => 'The justification must be at least 20 characters.',
-            'justification.max' => 'The justification cannot exceed 500 characters.',
+            'justification.required' => __('kerberos-auth::kerberos.validation.justification_required'),
+            'justification.min' => __('kerberos-auth::kerberos.validation.justification_min'),
+            'justification.max' => __('kerberos-auth::kerberos.validation.justification_max'),
         ];
     }
 
@@ -53,7 +53,7 @@ class RequestAccess extends Component
         $user = $userModel::find($this->user_id);
 
         if (! $user) {
-            session()->flash('error', 'An error occurred. Please try again.');
+            session()->flash('error', __('kerberos-auth::kerberos.flash.error_generic'));
 
             return;
         }

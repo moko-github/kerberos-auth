@@ -8,8 +8,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                     </svg>
                     <div>
-                        <h3 class="font-semibold text-gray-900">⚠️ Mode Développement</h3>
-                        <p class="text-sm text-gray-600">Simulation Kerberos active (environnement {{ app()->environment() }})</p>
+                        <h3 class="font-semibold text-gray-900">{{ __('kerberos-auth::kerberos.simulate.dev_mode') }}</h3>
+                        <p class="text-sm text-gray-600">{{ __('kerberos-auth::kerberos.simulate.env_info', ['env' => app()->environment()]) }}</p>
                     </div>
                 </div>
 
@@ -21,7 +21,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900">Simulation en cours</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ __('kerberos-auth::kerberos.simulate.active_label') }}</p>
                                     <p class="text-xs font-mono text-gray-600 truncate">{{ $currentSimulation }}</p>
                                 </div>
                             </div>
@@ -37,40 +37,40 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 5.373 0 0 12h4z"></path>
                                 </svg>
-                                Désactiver
+                                {{ __('kerberos-auth::kerberos.simulate.disable') }}
                             </button>
                         </div>
                     </div>
                 @else
                     <div class="flex flex-col gap-3">
 
-                        <p class="text-xs text-center text-gray-400 font-medium uppercase tracking-wide">Activer la simulation</p>
+                        <p class="text-xs text-center text-gray-400 font-medium uppercase tracking-wide">{{ __('kerberos-auth::kerberos.simulate.enable_section') }}</p>
 
                         <div class="flex flex-col gap-1">
-                            <label class="text-sm font-medium text-gray-700">Identifiant Kerberos personnalisé</label>
+                            <label class="text-sm font-medium text-gray-700">{{ __('kerberos-auth::kerberos.simulate.custom_label') }}</label>
                             <input
                                 wire:model="customKerberos"
                                 type="text"
-                                placeholder="prenom.nom@exemple.fr"
+                                placeholder="{{ __('kerberos-auth::kerberos.simulate.custom_placeholder') }}"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
                             />
-                            <p class="text-xs text-gray-400">Saisissez n'importe quel identifiant Kerberos</p>
+                            <p class="text-xs text-gray-400">{{ __('kerberos-auth::kerberos.simulate.custom_hint') }}</p>
                         </div>
 
-                        <p class="text-xs text-center text-gray-400">ou</p>
+                        <p class="text-xs text-center text-gray-400">{{ __('kerberos-auth::kerberos.simulate.or') }}</p>
 
                         <div class="flex flex-col gap-1">
-                            <label class="text-sm font-medium text-gray-700">Sélectionner un utilisateur existant</label>
+                            <label class="text-sm font-medium text-gray-700">{{ __('kerberos-auth::kerberos.simulate.select_label') }}</label>
                             <select
                                 wire:model="selectedKerberos"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white"
                             >
-                                <option value="">Choisir un identifiant existant...</option>
+                                <option value="">{{ __('kerberos-auth::kerberos.simulate.select_placeholder') }}</option>
                                 @foreach($this->availableKerberos as $user)
                                     <option value="{{ $user->kerberos }}">{{ $user->kerberos }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs text-gray-400">Les 10 premiers identifiants de la base de données</p>
+                            <p class="text-xs text-gray-400">{{ __('kerberos-auth::kerberos.simulate.select_hint') }}</p>
                         </div>
 
                         <button
@@ -85,8 +85,8 @@
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 5.373 0 0 12h4z"></path>
                             </svg>
-                            <span wire:loading.remove wire:target="simulate">Simuler la connexion</span>
-                            <span wire:loading wire:target="simulate">Connexion en cours...</span>
+                            <span wire:loading.remove wire:target="simulate">{{ __('kerberos-auth::kerberos.simulate.simulate_button') }}</span>
+                            <span wire:loading wire:target="simulate">{{ __('kerberos-auth::kerberos.simulate.simulating') }}</span>
                         </button>
 
                     </div>
@@ -97,9 +97,7 @@
                         <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
                         </svg>
-                        <p class="text-xs text-gray-600">
-                            <strong>Attention :</strong> Ce mode de simulation est <strong>strictement réservé aux environnements de développement et de pré-production</strong>. Il est automatiquement désactivé en production.
-                        </p>
+                        <p class="text-xs text-gray-600">{!! __('kerberos-auth::kerberos.simulate.warning') !!}</p>
                     </div>
                 </div>
 
