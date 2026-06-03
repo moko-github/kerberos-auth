@@ -21,9 +21,14 @@ return new class extends Migration
             return;
         }
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropUnique(['kerberos']);
-        });
+        $hasUniqueIndex = collect(Schema::getIndexes('users'))
+            ->contains(fn (array $index) => $index['unique'] && in_array('kerberos', $index['columns'], true));
+
+        if ($hasUniqueIndex) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropUnique(['kerberos']);
+            });
+        }
 
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('kerberos');
