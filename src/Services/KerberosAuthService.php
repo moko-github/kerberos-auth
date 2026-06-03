@@ -134,6 +134,7 @@ class KerberosAuthService
         return KerberosAttempt::create([
             'kerberos'     => $kerberos,
             'result'       => $result,
+            'user_id'      => $user?->getAuthIdentifier(),
             'ip_address'   => request()->ip(),
             'user_agent'   => request()->userAgent(),
             'attempted_at' => now(),

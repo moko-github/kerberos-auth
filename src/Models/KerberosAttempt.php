@@ -12,6 +12,7 @@ class KerberosAttempt extends Model
     protected $fillable = [
         'kerberos',
         'result',
+        'user_id',
         'ip_address',
         'user_agent',
         'attempted_at',

@@ -11,6 +11,12 @@ class KerberosSetupSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->environment('production')) {
+            $this->command?->warn('KerberosSetupSeeder ignoré en production (compte de test non créé).');
+
+            return;
+        }
+
         $userModel = Kerberos::userModel();
 
         $userRole = Role::where('name', 'User')->first();

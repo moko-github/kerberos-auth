@@ -69,7 +69,7 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
   relation `role`, renseigner `admin_notification_emails` (notification on-demand)
   — documenté dans la config.
 
-### [6] `logAttempt($user)` ignore son paramètre `$user`
+### [6] `logAttempt($user)` ignore son paramètre `$user` ✅ FAIT (2026-06-03)
 **Fichier :** `src/Services/KerberosAuthService.php` ligne 127,
 `database/migrations/2025_11_18_100002_create_kerberos_attempts_table.php`
 
@@ -80,7 +80,7 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
 
 ## 🟡 Améliorable — qualité & sécurité
 
-### [7] Seeder `KerberosSetupSeeder` — compte admin/password en prod
+### [7] Seeder `KerberosSetupSeeder` — compte admin/password en prod ✅ FAIT (2026-06-03)
 **Fichier :** `database/seeders/KerberosSetupSeeder.php`
 
 - Ajouter gate `if (app()->environment('production')) { return; }` ou warning explicite

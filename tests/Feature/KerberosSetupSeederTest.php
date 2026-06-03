@@ -62,6 +62,19 @@ describe('KerberosSetupSeeder', function () {
             ->toBe($adminRole->id);
     });
 
+    it('does nothing in production', function () {
+        app()->detectEnvironment(fn () => 'production');
+
+        Role::create(['name' => 'User']);
+        Role::create(['name' => 'Admin']);
+
+        (new KerberosSetupSeeder)->run();
+
+        expect(User::where('email', 'admin@example.com')->count())->toBe(0);
+
+        app()->detectEnvironment(fn () => 'testing');
+    });
+
     it('is idempotent when run multiple times', function () {
         Role::create(['name' => 'User']);
         Role::create(['name' => 'Admin']);

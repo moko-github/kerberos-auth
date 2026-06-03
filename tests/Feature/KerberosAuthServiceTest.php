@@ -101,14 +101,37 @@ it('returns no-role for a known user without a role', function () {
 
 it('returns success for a known user with a role', function () {
     $role = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'User']);
-    user(['kerberos' => 'alice@krb', 'role_id' => $role->id]);
+    $alice = user(['kerberos' => 'alice@krb', 'role_id' => $role->id]);
 
     $_SERVER['REMOTE_USER'] = 'alice@krb';
 
     $result = $this->service->authenticate();
 
     expect($result->status)->toBe(AuthResult::SUCCESS);
-    expect(KerberosAttempt::where('result', 'success')->count())->toBe(1);
+
+    $attempt = KerberosAttempt::where('result', 'success')->first();
+    expect($attempt)->not->toBeNull()
+        ->and($attempt->user_id)->toBe($alice->id);
+});
+
+it('stores user_id on the attempt for no-role', function () {
+    $bob = user(['kerberos' => 'bob2@krb', 'role_id' => null]);
+
+    $_SERVER['REMOTE_USER'] = 'bob2@krb';
+
+    $this->service->authenticate();
+
+    $attempt = KerberosAttempt::where('result', 'no_role')->first();
+    expect($attempt->user_id)->toBe($bob->id);
+});
+
+it('leaves user_id null on the attempt for unknown users', function () {
+    $_SERVER['REMOTE_USER'] = 'nobody@krb';
+
+    $this->service->authenticate();
+
+    $attempt = KerberosAttempt::where('result', 'unknown_user')->first();
+    expect($attempt->user_id)->toBeNull();
 });
 
 describe('role_check strategies', function () {
