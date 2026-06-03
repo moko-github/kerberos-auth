@@ -348,6 +348,47 @@ Copie dans `resources/views/vendor/kerberos-auth/` :
 
 ---
 
+## Internationalisation (i18n)
+
+Le package embarque des fichiers de traduction pour **l'anglais** (`en`) et le **français** (`fr`).
+Par défaut, Laravel utilise la locale de `config('app.locale')`.
+
+### Passer le package en français
+
+Dans `config/app.php` :
+
+```php
+'locale' => 'fr',
+'fallback_locale' => 'en',
+```
+
+Toutes les chaînes du package (notifications mail, messages flash, validation,
+vues Blade) s'afficheront automatiquement en français.
+
+### Publier et personnaliser les traductions
+
+```bash
+php artisan vendor:publish --tag=kerberos-lang
+```
+
+Copie dans `lang/vendor/kerberos-auth/` :
+
+```
+├── en/
+│   └── kerberos.php
+└── fr/
+    └── kerberos.php
+```
+
+Les fichiers publiés prennent le dessus sur ceux du package. Modifiez-les pour
+adapter les messages à votre contexte (ton, vocabulaire interne, langue tierce).
+
+> **Note :** Les traductions du package sont chargées sous le namespace
+> `kerberos-auth`. Les clés suivent la structure `kerberos-auth::kerberos.<section>.<clé>`,
+> par exemple `kerberos-auth::kerberos.flash.simulation_disabled`.
+
+---
+
 ## Développement & tests
 
 ```bash
@@ -390,4 +431,5 @@ php artisan kerberos:purge-attempts     # Purge les tentatives anciennes
 php artisan vendor:publish --tag=kerberos-config   # config/kerberos.php
 php artisan vendor:publish --tag=kerberos-views    # vues + layout guest
 php artisan vendor:publish --tag=kerberos-seeders  # seeders
+php artisan vendor:publish --tag=kerberos-lang     # traductions EN/FR
 ```
