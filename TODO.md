@@ -91,7 +91,7 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
 
 - Remplacer `$_SERVER[$serverVar] ?? null` par `request()->server($serverVar)`
 
-### [9] Internationalisation incohérente (FR/EN mélangés, chaînes en dur)
+### [9] Internationalisation incohérente (FR/EN mélangés, chaînes en dur) ✅ FAIT (2026-06-03)
 - Créer `resources/lang/fr/kerberos.php` et `resources/lang/en/kerberos.php`
 - Publier via `--tag=kerberos-lang`
 - Passer tous les messages user-facing par `__('kerberos-auth::kerberos.xxx')`
@@ -120,6 +120,6 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
 - Correctifs de typage : @property sur les modèles, getAuthIdentifier()/getKey(),
   Notification::send(), data_get() pour les relations User génériques
 
-### [14] Versioning & CHANGELOG
+### [14] Versioning & CHANGELOG ✅ FAIT (2026-06-03)
 - Créer `CHANGELOG.md`
 - Mettre en place une stratégie de tags/releases (SemVer)

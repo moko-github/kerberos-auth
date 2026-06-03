@@ -26,13 +26,15 @@ class AccessRequestRejectedNotification extends Notification implements ShouldQu
 
     public function toMail(object $notifiable): MailMessage
     {
+        $app = config('app.name');
+
         return (new MailMessage)
-            ->subject('❌ Demande d\'accès refusée - '.config('app.name'))
+            ->subject(__('kerberos-auth::kerberos.notif.rejected.subject', ['app' => $app]))
             ->error()
-            ->greeting('Votre demande d\'accès a été refusée.')
-            ->line("Motif : {$this->adminMessage}")
-            ->line('Vous pouvez soumettre une nouvelle demande avec une justification complémentaire si nécessaire.')
-            ->action('Soumettre une nouvelle demande', route('access-request.create'))
-            ->salutation('— '.config('app.name'));
+            ->greeting(__('kerberos-auth::kerberos.notif.rejected.greeting'))
+            ->line(__('kerberos-auth::kerberos.notif.rejected.line_reason', ['reason' => $this->adminMessage]))
+            ->line(__('kerberos-auth::kerberos.notif.rejected.line_retry'))
+            ->action(__('kerberos-auth::kerberos.notif.rejected.action'), route('access-request.create'))
+            ->salutation(__('kerberos-auth::kerberos.notif.unknown_attempt.salutation', ['app' => $app]));
     }
 }
