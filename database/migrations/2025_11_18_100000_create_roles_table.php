@@ -13,10 +13,23 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->timestamps();
         });
+
+        Schema::table('users', function (Blueprint $table) {
+            if (! Schema::hasColumn('users', 'role_id')) {
+                $table->foreignId('role_id')->nullable()->constrained()->nullOnDelete()->after('email');
+            }
+        });
     }
 
     public function down(): void
     {
+        Schema::table('users', function (Blueprint $table) {
+            if (Schema::hasColumn('users', 'role_id')) {
+                $table->dropForeign(['role_id']);
+                $table->dropColumn('role_id');
+            }
+        });
+
         Schema::dropIfExists('roles');
     }
 };
