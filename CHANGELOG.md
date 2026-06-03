@@ -11,10 +11,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] — 2026-06-03
+## [2.0.0] — 2026-06-03
 
-First stable release. All breaking changes listed below are relative to the
-pre-release state of the package (no prior tagged release existed).
+Major release. The package is now fully decoupled from the host application's
+`App\Models\User` and ships with i18n, a test harness, and quality tooling.
+Two public API signatures changed (see **BREAKING CHANGES**), hence the major
+version bump from the `1.0.x` line.
+
+### ⚠️ BREAKING CHANGES
+
+- **`UserAccessCheckInterface::check()` signature changed.** Its first parameter
+  is now typed on `Illuminate\Contracts\Auth\Authenticatable` instead of
+  `App\Models\User`. Any class implementing this interface must update its method
+  signature accordingly:
+
+  ```php
+  // Before
+  public function check(\App\Models\User $user): bool
+
+  // After
+  use Illuminate\Contracts\Auth\Authenticatable;
+
+  public function check(Authenticatable $user): bool
+  ```
+
+- **`AuthResult::$user` type changed.** The property (and the related factory
+  methods) is now typed `?Illuminate\Contracts\Auth\Authenticatable` instead of
+  `?App\Models\User`. Code that type-hinted the result against `App\Models\User`
+  must widen to `Authenticatable` (or cast as needed). Access the identifier via
+  `$result->user?->getAuthIdentifier()` rather than `$result->user?->id` if you
+  no longer assume an Eloquent model.
+
+**Migration guide:** if you never implemented `UserAccessCheckInterface` and only
+consumed `AuthResult` for its `status`/`message`, no code change is required —
+the runtime behaviour is unchanged. The bump is major because the published
+type contract changed.
 
 ### Added
 
@@ -95,6 +126,6 @@ Branches:
 
 Release checklist:
 1. Update `CHANGELOG.md` (move items from `[Unreleased]` to the new version section).
-2. Tag: `git tag -s v1.x.y -m "v1.x.y"`.
-3. Push tag: `git push origin v1.x.y`.
+2. Tag: `git tag -s vX.Y.Z -m "vX.Y.Z"`.
+3. Push tag: `git push origin vX.Y.Z`.
 4. Create a GitHub Release from the tag, copy the CHANGELOG section as release notes.
