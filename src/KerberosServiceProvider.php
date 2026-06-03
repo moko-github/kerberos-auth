@@ -24,6 +24,7 @@ class KerberosServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'kerberos-auth');
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'kerberos-auth');
 
         Livewire::component('auth.access-denied', AccessDenied::class);
         Livewire::component('auth.request-access', RequestAccess::class);
@@ -42,6 +43,10 @@ class KerberosServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../resources/views' => resource_path('views/vendor/kerberos-auth'),
             ], 'kerberos-views');
+
+            $this->publishes([
+                __DIR__.'/../resources/lang' => $this->app->langPath('vendor/kerberos-auth'),
+            ], 'kerberos-lang');
 
             $this->commands([
                 KerberosInstallCommand::class,
