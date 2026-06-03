@@ -10,15 +10,10 @@ use MokoGithub\KerberosAuth\Tests\Fixtures\User;
 
 beforeEach(function () {
     Notification::fake();
-    unset($_SERVER['REMOTE_USER']);
 
     Route::middleware(['web', KerberosAuthentication::class])
         ->get('/protected', fn () => 'protected')
         ->name('protected');
-});
-
-afterEach(function () {
-    unset($_SERVER['REMOTE_USER']);
 });
 
 it('lets the request through when Kerberos is disabled', function () {
@@ -34,9 +29,9 @@ it('logs a user in and redirects to the success route on success', function () {
         'kerberos' => 'alice@krb', 'role_id' => $role->id,
     ]);
 
-    $_SERVER['REMOTE_USER'] = 'alice@krb';
-
-    $this->get('/protected')->assertRedirect(route('dashboard'));
+    $this->withServerVariables(['REMOTE_USER' => 'alice@krb'])
+        ->get('/protected')
+        ->assertRedirect(route('dashboard'));
     $this->assertAuthenticated();
 });
 
@@ -46,16 +41,16 @@ it('redirects a roleless user to the access-request form', function () {
         'kerberos' => 'bob@krb', 'role_id' => null,
     ]);
 
-    $_SERVER['REMOTE_USER'] = 'bob@krb';
-
-    $this->get('/protected')->assertRedirect(route('access-request.create'));
+    $this->withServerVariables(['REMOTE_USER' => 'bob@krb'])
+        ->get('/protected')
+        ->assertRedirect(route('access-request.create'));
     $this->assertGuest();
 });
 
 it('redirects an unknown identifier to the access-denied page', function () {
-    $_SERVER['REMOTE_USER'] = 'ghost@krb';
-
-    $this->get('/protected')->assertRedirect(route('access-denied'));
+    $this->withServerVariables(['REMOTE_USER' => 'ghost@krb'])
+        ->get('/protected')
+        ->assertRedirect(route('access-denied'));
     $this->assertGuest();
 });
 

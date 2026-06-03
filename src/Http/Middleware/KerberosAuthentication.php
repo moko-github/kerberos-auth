@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Http\Middleware;
 
 use Closure;
@@ -63,7 +65,7 @@ class KerberosAuthentication
 
     protected function handleSuccess(AuthResult $result, Request $request, Closure $next): Response
     {
-        Auth::login($result->user, remember: true);
+        Auth::login($result->user, remember: (bool) config('kerberos.remember_login', true));
 
         return redirect()->intended(route(Kerberos::successRoute()));
     }

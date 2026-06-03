@@ -71,6 +71,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Remember Login
+    |--------------------------------------------------------------------------
+    |
+    | Whether a successful Kerberos login sets the "remember me" cookie.
+    | Requires a remember_token column on the users table when true.
+    |
+    */
+
+    'remember_login' => env('KERBEROS_REMEMBER_LOGIN', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Simulation Mode (Development Only)
     |--------------------------------------------------------------------------
     |

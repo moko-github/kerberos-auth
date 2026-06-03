@@ -86,7 +86,7 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
 - Ajouter gate `if (app()->environment('production')) { return; }` ou warning explicite
 - Documenter clairement que ce seeder est réservé au développement/staging
 
-### [8] `$_SERVER` direct au lieu de `request()->server()`
+### [8] `$_SERVER` direct au lieu de `request()->server()` ✅ FAIT (2026-06-03)
 **Fichier :** `src/Services/KerberosAuthService.php` ligne 23
 
 - Remplacer `$_SERVER[$serverVar] ?? null` par `request()->server($serverVar)`
@@ -96,10 +96,10 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
 - Publier via `--tag=kerberos-lang`
 - Passer tous les messages user-facing par `__('kerberos-auth::kerberos.xxx')`
 
-### [10] `declare(strict_types=1)` partiel (Notifications uniquement)
+### [10] `declare(strict_types=1)` partout ✅ FAIT (2026-06-03)
 - Ajouter `declare(strict_types=1)` dans tous les fichiers PHP du package
 
-### [11] Prérequis non documentés dans le README
+### [11] Prérequis non documentés + remember configurable ✅ FAIT (2026-06-03)
 - Canal `database` des notifications → exige migration `notifications` + trait `Notifiable`
 - `remember: true` forcé au login → rendre configurable via `kerberos.remember_me`
 - Documenter ces prérequis dans le README (section "Prérequis")

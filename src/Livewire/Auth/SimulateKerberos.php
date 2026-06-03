@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Livewire\Auth;
 
 use Illuminate\Database\Eloquent\Collection;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Models;
 
 use Carbon\Carbon;

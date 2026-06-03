@@ -12,6 +12,23 @@ Package Laravel d'authentification SSO Kerberos via la variable serveur `REMOTE_
 
 ---
 
+## Prérequis
+
+Sur votre modèle utilisateur et votre application :
+
+- **Trait `Illuminate\Notifications\Notifiable`** sur le modèle User — requis pour
+  l'envoi des notifications admin (nouvelle demande d'accès, tentative inconnue).
+- **Table `notifications`** migrée (`php artisan notifications:table && php artisan migrate`)
+  — la notification de nouvelle demande d'accès utilise le canal `database`.
+- **Colonne `remember_token`** sur la table `users` (présente par défaut dans Laravel)
+  si `kerberos.remember_login` est à `true` (défaut). Sinon, passez-la à `false`.
+- **Un worker de file d'attente** (`php artisan queue:work`) — les notifications
+  implémentent `ShouldQueue` et sont poussées sur la file `notifications`.
+- **Routes nommées** `dashboard` et `login` (ou configurées via `kerberos.redirects`,
+  voir Configuration).
+
+---
+
 ## Installation
 
 ### 1. Déclarer le dépôt dans `composer.json`

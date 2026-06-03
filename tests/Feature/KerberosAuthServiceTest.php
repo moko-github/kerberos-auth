@@ -11,11 +11,7 @@ use MokoGithub\KerberosAuth\Tests\Fixtures\User;
 
 beforeEach(function () {
     $this->service = app(KerberosAuthService::class);
-    unset($_SERVER['REMOTE_USER']);
-});
-
-afterEach(function () {
-    unset($_SERVER['REMOTE_USER']);
+    request()->server->remove('REMOTE_USER');
 });
 
 function user(array $attributes = []): User
@@ -25,6 +21,11 @@ function user(array $attributes = []): User
         'email'    => uniqid().'@example.com',
         'password' => bcrypt('secret'),
     ], $attributes));
+}
+
+function kerberos(string $identifier): void
+{
+    request()->server->set('REMOTE_USER', $identifier);
 }
 
 it('returns no-kerberos when disabled and no simulation', function () {
@@ -44,7 +45,7 @@ it('returns unknown-user, logs the attempt and notifies admins', function () {
     $adminRole = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'Admin']);
     $admin->update(['role_id' => $adminRole->id]);
 
-    $_SERVER['REMOTE_USER'] = 'ghost@krb';
+    kerberos('ghost@krb');
 
     $result = $this->service->authenticate();
 
@@ -61,7 +62,7 @@ it('notifies configured admin emails on-demand instead of admin users', function
 
     config()->set('kerberos.admin_notification_emails', ['rssi@example.com', 'it@example.com']);
 
-    $_SERVER['REMOTE_USER'] = 'ghost@krb';
+    kerberos('ghost@krb');
 
     $this->service->authenticate();
 
@@ -80,7 +81,7 @@ it('respects the configurable admin role when resolving recipients', function ()
     $supervisor = user(['kerberos' => 'sup@krb', 'role_id' => $role->id]);
     config()->set('kerberos.admin_role', 'Superviseur');
 
-    $_SERVER['REMOTE_USER'] = 'ghost@krb';
+    kerberos('ghost@krb');
 
     $this->service->authenticate();
 
@@ -90,7 +91,7 @@ it('respects the configurable admin role when resolving recipients', function ()
 it('returns no-role for a known user without a role', function () {
     user(['kerberos' => 'bob@krb', 'role_id' => null]);
 
-    $_SERVER['REMOTE_USER'] = 'bob@krb';
+    kerberos('bob@krb');
 
     $result = $this->service->authenticate();
 
@@ -103,7 +104,7 @@ it('returns success for a known user with a role', function () {
     $role = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'User']);
     $alice = user(['kerberos' => 'alice@krb', 'role_id' => $role->id]);
 
-    $_SERVER['REMOTE_USER'] = 'alice@krb';
+    kerberos('alice@krb');
 
     $result = $this->service->authenticate();
 
@@ -117,7 +118,7 @@ it('returns success for a known user with a role', function () {
 it('stores user_id on the attempt for no-role', function () {
     $bob = user(['kerberos' => 'bob2@krb', 'role_id' => null]);
 
-    $_SERVER['REMOTE_USER'] = 'bob2@krb';
+    kerberos('bob2@krb');
 
     $this->service->authenticate();
 
@@ -126,7 +127,7 @@ it('stores user_id on the attempt for no-role', function () {
 });
 
 it('leaves user_id null on the attempt for unknown users', function () {
-    $_SERVER['REMOTE_USER'] = 'nobody@krb';
+    kerberos('nobody@krb');
 
     $this->service->authenticate();
 
@@ -138,7 +139,7 @@ describe('role_check strategies', function () {
     it('column / is_not_null grants access when the column is set', function () {
         $role = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'User']);
         user(['kerberos' => 'c@krb', 'role_id' => $role->id]);
-        $_SERVER['REMOTE_USER'] = 'c@krb';
+        kerberos('c@krb');
 
         expect($this->service->authenticate()->status)->toBe(AuthResult::SUCCESS);
     });
@@ -149,7 +150,7 @@ describe('role_check strategies', function () {
 
         $role = \MokoGithub\KerberosAuth\Models\Role::create(['name' => 'User']);
         user(['kerberos' => 'rel@krb', 'role_id' => $role->id]);
-        $_SERVER['REMOTE_USER'] = 'rel@krb';
+        kerberos('rel@krb');
 
         expect($this->service->authenticate()->status)->toBe(AuthResult::SUCCESS);
     });
@@ -159,7 +160,7 @@ describe('role_check strategies', function () {
         config()->set('kerberos.role_check.relation', 'role');
 
         user(['kerberos' => 'norel@krb', 'role_id' => null]);
-        $_SERVER['REMOTE_USER'] = 'norel@krb';
+        kerberos('norel@krb');
 
         expect($this->service->authenticate()->status)->toBe(AuthResult::NO_ROLE);
     });
@@ -169,7 +170,7 @@ describe('role_check strategies', function () {
         config()->set('kerberos.role_check.callable', AlwaysDeny::class);
 
         user(['kerberos' => 'cb@krb']);
-        $_SERVER['REMOTE_USER'] = 'cb@krb';
+        kerberos('cb@krb');
 
         expect($this->service->authenticate()->status)->toBe(AuthResult::NO_ROLE);
     });
@@ -179,7 +180,7 @@ describe('role_check strategies', function () {
         config()->set('kerberos.role_check.callable', null);
 
         user(['kerberos' => 'cb2@krb']);
-        $_SERVER['REMOTE_USER'] = 'cb2@krb';
+        kerberos('cb2@krb');
 
         $this->service->authenticate();
     })->throws(RuntimeException::class);

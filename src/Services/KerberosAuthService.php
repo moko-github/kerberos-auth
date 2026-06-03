@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MokoGithub\KerberosAuth\Services;
 
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -23,7 +25,7 @@ class KerberosAuthService
 
         $serverVar = config('kerberos.server_variable', 'REMOTE_USER');
 
-        return $_SERVER[$serverVar] ?? null;
+        return request()->server($serverVar);
     }
 
     public function authenticate(): AuthResult
