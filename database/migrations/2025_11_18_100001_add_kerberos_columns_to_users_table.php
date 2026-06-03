@@ -17,10 +17,16 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('users', 'kerberos')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table) {
-            if (Schema::hasColumn('users', 'kerberos')) {
-                $table->dropColumn('kerberos');
-            }
+            $table->dropUnique(['kerberos']);
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('kerberos');
         });
     }
 };

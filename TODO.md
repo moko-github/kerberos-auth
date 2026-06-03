@@ -32,7 +32,9 @@ Issu de l'audit du 2026-06-03. Classé par criticité.
   ```
 - Remplacer tous les `route('dashboard')` / `route('login')` codés en dur
 
-### [3] Harnais de tests (zéro test exécutable en l'état)
+### [3] Harnais de tests (zéro test exécutable en l'état) ✅ FAIT (2026-06-03)
+> Bonus : correction des `down()` des migrations roles/kerberos (drop index/FK
+> avant la colonne) — révélé par les tests, bug réel sur SQLite.
 **Fichiers impactés :** `composer.json`, `tests/Feature/KerberosSetupSeederTest.php`
 
 - Ajouter `orchestra/testbench` + `pestphp/pest` en `require-dev`

@@ -23,12 +23,15 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            if (Schema::hasColumn('users', 'role_id')) {
+        if (Schema::hasColumn('users', 'role_id')) {
+            Schema::table('users', function (Blueprint $table) {
                 $table->dropForeign(['role_id']);
+            });
+
+            Schema::table('users', function (Blueprint $table) {
                 $table->dropColumn('role_id');
-            }
-        });
+            });
+        }
 
         Schema::dropIfExists('roles');
     }

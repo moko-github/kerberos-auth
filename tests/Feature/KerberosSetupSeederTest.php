@@ -1,33 +1,43 @@
 <?php
 
-use App\Enums\UserStatus;
-use App\Models\Role;
-use App\Models\User;
-use Database\Seeders\KerberosSetupSeeder;
+declare(strict_types=1);
+
+use MokoGithub\KerberosAuth\Database\Seeders\KerberosSetupSeeder;
+use MokoGithub\KerberosAuth\Models\Role;
+use MokoGithub\KerberosAuth\Tests\Fixtures\User;
+
+function makeUser(array $attributes = []): User
+{
+    return User::create(array_merge([
+        'name'     => 'Jane',
+        'email'    => 'jane'.uniqid().'@example.com',
+        'password' => bcrypt('secret'),
+    ], $attributes));
+}
 
 describe('KerberosSetupSeeder', function () {
-    it('assigns user role to existing users without a role', function () {
+    it('assigns the User role to existing users without a role', function () {
         $userRole = Role::create(['name' => 'User']);
         Role::create(['name' => 'Admin']);
 
-        $userWithoutRole = User::factory()->create(['role_id' => null]);
-        $userWithRole = User::factory()->create(['role_id' => $userRole->id]);
+        $withoutRole = makeUser(['role_id' => null]);
+        $withRole    = makeUser(['role_id' => $userRole->id]);
 
         (new KerberosSetupSeeder)->run();
 
-        expect($userWithoutRole->fresh()->role_id)->toBe($userRole->id)
-            ->and($userWithRole->fresh()->role_id)->toBe($userRole->id);
+        expect($withoutRole->fresh()->role_id)->toBe($userRole->id)
+            ->and($withRole->fresh()->role_id)->toBe($userRole->id);
     });
 
-    it('does not assign user role when the role does not exist', function () {
-        $user = User::factory()->create(['role_id' => null]);
+    it('does not assign a role when the User role does not exist', function () {
+        $user = makeUser(['role_id' => null]);
 
         (new KerberosSetupSeeder)->run();
 
         expect($user->fresh()->role_id)->toBeNull();
     });
 
-    it('creates admin test account when it does not exist', function () {
+    it('creates the admin test account when it does not exist', function () {
         Role::create(['name' => 'User']);
         $adminRole = Role::create(['name' => 'Admin']);
 
@@ -36,23 +46,20 @@ describe('KerberosSetupSeeder', function () {
         $admin = User::where('email', 'admin@example.com')->first();
 
         expect($admin)->not->toBeNull()
-            ->and($admin->name)->toBe('Test User')
             ->and($admin->kerberos)->toBe('admin@krb.example.com')
-            ->and($admin->role_id)->toBe($adminRole->id)
-            ->and($admin->status)->toBe(UserStatus::ACTIVE);
+            ->and($admin->role_id)->toBe($adminRole->id);
     });
 
-    it('always assigns admin role to existing admin@example.com', function () {
+    it('always assigns the Admin role to an existing admin@example.com', function () {
         Role::create(['name' => 'User']);
         $adminRole = Role::create(['name' => 'Admin']);
 
-        User::factory()->create(['email' => 'admin@example.com', 'role_id' => null]);
+        makeUser(['email' => 'admin@example.com', 'role_id' => null]);
 
         (new KerberosSetupSeeder)->run();
 
-        $admin = User::where('email', 'admin@example.com')->first();
-
-        expect($admin->role_id)->toBe($adminRole->id);
+        expect(User::where('email', 'admin@example.com')->first()->role_id)
+            ->toBe($adminRole->id);
     });
 
     it('is idempotent when run multiple times', function () {

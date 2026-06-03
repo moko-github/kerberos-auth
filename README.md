@@ -321,6 +321,18 @@ Copie dans `resources/views/vendor/kerberos-auth/` :
 
 ---
 
+## Développement & tests
+
+```bash
+composer install
+composer test        # ou : vendor/bin/pest
+```
+
+Les tests s'appuient sur Orchestra Testbench + Pest, avec une base SQLite en
+mémoire et un modèle utilisateur de fixture (`tests/Fixtures/User.php`).
+
+---
+
 ## Mise à jour
 
 ```bash
