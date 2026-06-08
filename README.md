@@ -31,20 +31,7 @@ Sur votre modèle utilisateur et votre application :
 
 ## Installation
 
-### 1. Déclarer le dépôt dans `composer.json`
-
-**Production (dépôt VCS privé) :**
-
-```json
-{
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/moko-github/kerberos-auth"
-        }
-    ]
-}
-```
+### 1. Dévelopement sur le package avec dependance projet, déclarer le dépôt dans `composer.json`
 
 **Développement (chemin local) :**
 
