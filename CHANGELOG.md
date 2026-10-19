@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Answering **no** to the roles question of `kerberos:install` (or passing
+  `--no-roles`) no longer lets a later `php artisan migrate` create the `roles`
+  table and the `users.role_id` column. The choice is persisted in `.env` as
+  `KERBEROS_ROLES_ENABLED` (new config key `kerberos.roles_enabled`, default
+  `true`), and the service provider skips the roles migration when it is `false`.
+- `KerberosSetupSeeder` no longer queries the `roles` table when the roles
+  system is disabled.
+
 ---
 
 ## [2.0.0] — 2026-06-03

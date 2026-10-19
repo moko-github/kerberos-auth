@@ -75,6 +75,16 @@ Sans réponse, les valeurs par défaut (entre crochets) s'appliquent.
 
 La question sur les rôles est posée **avant** les migrations, ce qui garantit que la colonne `role_id` n'est ajoutée à la table `users` que si vous en avez besoin.
 
+La réponse est enregistrée dans `.env` (`KERBEROS_ROLES_ENABLED=true|false`). Avec `false`, la migration
+`create_roles_table` n'est pas enregistrée par le package : un `php artisan migrate` ultérieur
+(par exemple après un `composer update`) ne crée **ni** la table `roles` **ni** la colonne `role_id`.
+
+> Sans système de rôles, la stratégie par défaut `role_check` (colonne `role_id`) refuse tous les
+> utilisateurs : configurez une autre stratégie (voir [Stratégie de vérification des rôles](#stratégie-de-vérification-des-rôles)).
+>
+> Pour activer les rôles plus tard : passez `KERBEROS_ROLES_ENABLED=true` puis lancez `php artisan migrate`
+> (pensez à `php artisan config:clear` si la configuration est en cache).
+
 Cette commande effectue automatiquement :
 - Ajout des middlewares dans `bootstrap/app.php`
 - Ajout du champ `kerberos` (et `role_id` si rôles activés) dans `app/Models/User.php`
@@ -168,6 +178,7 @@ ou via `.env` : `KERBEROS_SUCCESS_ROUTE` et `KERBEROS_LOGIN_ROUTE`.
 
 ```env
 KERBEROS_ENABLED=false                    # Active l'authentification Kerberos
+KERBEROS_ROLES_ENABLED=true               # Système de rôles du package (table roles + role_id), écrit par kerberos:install
 KERBEROS_SERVER_VAR=REMOTE_USER           # Variable serveur contenant le principal
 KERBEROS_FALLBACK_AUTH=true               # true = login classique en secours ; false = Kerberos strict (403 sans ticket)
 KERBEROS_SIMULATION_MODE=false            # Active le mode simulation (dév uniquement)

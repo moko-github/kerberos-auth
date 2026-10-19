@@ -23,7 +23,9 @@ class KerberosSetupSeeder extends Seeder
 
         $userModel = Kerberos::userModel();
 
-        $userRole = Role::where('name', 'User')->first();
+        $withRoles = Kerberos::rolesEnabled();
+
+        $userRole = $withRoles ? Role::where('name', 'User')->first() : null;
 
         if ($userRole) {
             $userModel::whereNull('role_id')->each(function ($user) use ($userRole): void {
@@ -47,7 +49,7 @@ class KerberosSetupSeeder extends Seeder
             $adminData
         );
 
-        $adminRole = Role::where('name', 'Admin')->first();
+        $adminRole = $withRoles ? Role::where('name', 'Admin')->first() : null;
 
         if ($adminRole) {
             $admin->role_id = $adminRole->id;

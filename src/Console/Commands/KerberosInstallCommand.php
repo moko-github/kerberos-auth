@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use MokoGithub\KerberosAuth\Database\Seeders\KerberosSetupSeeder;
 use MokoGithub\KerberosAuth\Database\Seeders\RolesSeeder;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
@@ -27,12 +28,13 @@ class KerberosInstallCommand extends Command
         intro("Installation de l'authentification Kerberos...");
 
         $withRoles = $this->shouldInstallRoles();
+        config(['kerberos.roles_enabled' => $withRoles]);
 
         $this->configureMiddleware();
         $this->configureUserModel($withRoles);
         $this->configureRoutes();
         $this->configureScheduler();
-        $this->appendEnvVariables();
+        $this->appendEnvVariables($withRoles);
         $this->runKerberosMigrations($withRoles);
         $this->runSeeders($withRoles);
 
@@ -63,7 +65,7 @@ class KerberosInstallCommand extends Command
 
         return confirm(
             'Installer le système de rôles ? (table roles + colonne role_id sur users)',
-            default: true
+            default: Kerberos::rolesEnabled()
         );
     }
 
@@ -175,15 +177,33 @@ class KerberosInstallCommand extends Command
         $this->line('  Scheduler configuré.');
     }
 
-    protected function appendEnvVariables(): void
+    protected function appendEnvVariables(bool $withRoles): void
     {
         $envFile = base_path('.env');
+        $rolesLine = 'KERBEROS_ROLES_ENABLED='.($withRoles ? 'true' : 'false');
 
         if (! File::exists($envFile)) {
+            if (! $withRoles) {
+                $this->warn('⚠  Fichier .env introuvable : ajoutez-y manuellement la ligne suivante');
+                $this->warn('   pour que `php artisan migrate` ne crée pas la table roles :');
+                $this->line("       {$rolesLine}");
+            }
+
             return;
         }
 
         $content = File::get($envFile);
+
+        // The roles choice is always persisted, even on re-install: it decides
+        // whether `php artisan migrate` registers the roles migration.
+        if (preg_match('/^KERBEROS_ROLES_ENABLED=.*$/m', $content)) {
+            $content = (string) preg_replace('/^KERBEROS_ROLES_ENABLED=.*$/m', $rolesLine, $content);
+            File::put($envFile, $content);
+            $this->line("  {$rolesLine} mis à jour dans .env.");
+        } elseif (str_contains($content, 'KERBEROS_ENABLED')) {
+            File::put($envFile, rtrim($content, "\n")."\n{$rolesLine}\n");
+            $this->line("  {$rolesLine} ajouté au .env.");
+        }
 
         if (str_contains($content, 'KERBEROS_ENABLED')) {
             $this->line('  Variables .env déjà présentes, ignorées.');
@@ -193,6 +213,7 @@ class KerberosInstallCommand extends Command
 
         $envBlock = "\n# Kerberos Authentication\n".
             "KERBEROS_ENABLED=false\n".
+            "{$rolesLine}\n".
             "KERBEROS_SERVER_VAR=REMOTE_USER\n".
             "KERBEROS_FALLBACK_AUTH=true\n".
             "KERBEROS_SIMULATION_MODE=false\n".
