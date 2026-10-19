@@ -24,6 +24,14 @@ class Kerberos
     }
 
     /**
+     * Whether the package's roles system (roles table + users.role_id) is enabled.
+     */
+    public static function rolesEnabled(): bool
+    {
+        return (bool) config('kerberos.roles_enabled', true);
+    }
+
+    /**
      * Route name users are redirected to after a successful Kerberos login.
      */
     public static function successRoute(): string

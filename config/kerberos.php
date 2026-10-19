@@ -28,6 +28,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Roles System
+    |--------------------------------------------------------------------------
+    |
+    | Whether the package's roles system is used (roles table + role_id
+    | column on users). When false, the roles migration is not registered,
+    | so a later `php artisan migrate` will not create it.
+    |
+    | Set automatically in .env by `kerberos:install` from your answer.
+    |
+    */
+
+    'roles_enabled' => env('KERBEROS_ROLES_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Redirect Routes
     |--------------------------------------------------------------------------
     |

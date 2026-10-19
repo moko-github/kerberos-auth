@@ -12,6 +12,7 @@ use MokoGithub\KerberosAuth\Livewire\Auth\AccessDenied;
 use MokoGithub\KerberosAuth\Livewire\Auth\RequestAccess;
 use MokoGithub\KerberosAuth\Livewire\Auth\SimulateKerberos;
 use MokoGithub\KerberosAuth\Livewire\Auth\SimulationBanner;
+use MokoGithub\KerberosAuth\Support\Kerberos;
 
 class KerberosServiceProvider extends ServiceProvider
 {
@@ -22,7 +23,7 @@ class KerberosServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom($this->migrationPaths());
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'kerberos-auth');
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'kerberos-auth');
 
@@ -53,5 +54,27 @@ class KerberosServiceProvider extends ServiceProvider
                 PurgeKerberosAttempts::class,
             ]);
         }
+    }
+
+    /**
+     * Package migration files to register with the migrator.
+     *
+     * The roles migration is left out when the roles system is disabled, so a
+     * later `php artisan migrate` does not create the roles table / role_id.
+     *
+     * @return array<int, string>
+     */
+    protected function migrationPaths(): array
+    {
+        $files = glob(__DIR__.'/../database/migrations/*.php') ?: [];
+
+        if (! Kerberos::rolesEnabled()) {
+            $files = array_filter(
+                $files,
+                fn (string $file) => ! str_ends_with($file, '_create_roles_table.php')
+            );
+        }
+
+        return array_values($files);
     }
 }
