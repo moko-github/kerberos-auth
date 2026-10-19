@@ -17,8 +17,10 @@ parameters:
             message: '#Parameter \#1 \$view of function view expects view-string\|null, string given\.#'
             path: src/Livewire/Auth/*.php
         # Livewire registers ->layout() on Illuminate\View\View as a runtime macro,
-        # which Larastan cannot see.
+        # which Larastan cannot see. Only reported with some dependency versions
+        # (the CI resolves deps without a lockfile), hence reportUnmatched: false.
         -
             identifier: method.notFound
             message: '#Call to an undefined method Illuminate\\View\\View::layout\(\)\.#'
             path: src/Livewire/Auth/*.php
+            reportUnmatched: false
