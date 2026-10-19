@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [2.1.0] — 2026-10-19
+
+### Added
+
+- New `kerberos.roles_enabled` config key (env `KERBEROS_ROLES_ENABLED`,
+  default `true`), written to `.env` by `kerberos:install` from the answer to
+  the roles question.
+
+### Changed
+
+- PHPStan: ignore Livewire's runtime `View::layout()` macro, which Larastan
+  cannot resolve.
+
 ### Fixed
 
 - Answering **no** to the roles question of `kerberos:install` (or passing
@@ -18,6 +33,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `true`), and the service provider skips the roles migration when it is `false`.
 - `KerberosSetupSeeder` no longer queries the `roles` table when the roles
   system is disabled.
+
+---
+
+## [2.0.2] — 2026-06-08
+
+### Changed
+
+- README: clarify local (path repository) installation.
+
+---
+
+## [2.0.1] — 2026-06-03
+
+### Changed
+
+- README: document publishing and using the i18n translations.
 
 ---
 
